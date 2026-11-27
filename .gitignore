@@ -1,0 +1,22 @@
+# Generated files and local secrets
+.gradle/
+.kotlin/
+.idea/
+local.properties
+*.iml
+/build/
+**/build/
+*.jks
+*.keystore
+*.p12
+*.pfx
+store-password.txt
+key.properties
+/tools/android-sdk/
+/tools/arm64-sdk-tools/
+/tools/downloads/
+/tools/cli-unpacked/
+/tools/toolchain-verification.json
+/artifacts/
+__pycache__/
+*.pyc

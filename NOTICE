@@ -1,0 +1,51 @@
+新教育智能题卡（原生重写版）
+=============================
+
+本项目是 2026 年全新编写的 Kotlin / Jetpack Compose / Material 3 原生 Android
+应用程序，为独立的新代码库与全新 Git 历史，不使用旧项目的 Qt / C++ / QML /
+WebView 代码，也不复用旧项目的构建产物或签名身份。
+
+归属与来源
+----------
+
+* 原始项目归属：LFWQSP2641 / ZhiNengTiKa
+  （https://github.com/LFWQSP2641/ZhiNengTiKa）
+* 修复 fork 归属：2034974607 / ZhiNengTiKa
+  （https://github.com/2034974607/ZhiNengTiKa）
+* 审计基线：fork 提交 ed34415b5fb893dc22a6b94a5cd14e3c2e7a457c（当前已发布修复版 1.8.1）
+  与 upstream 提交 4d192e4e61a7f854c8f48be739e7cff513b6b242。
+
+许可证
+------
+
+本项目的原创源代码依据旧项目所采用的 GNU Affero General Public License
+version 3（AGPL-3.0）授权；完整许可证文本见仓库根目录 LICENSE 以及应用内
+assets/legal/AGPL-3.0.txt。依据 AGPL 第 5 节，本原生重写版标注为修改版本，
+保留相同许可证并标注修改事实与日期（2026 年）。
+
+第三方依赖（如 AndroidX、Kotlin/Compose、OkHttp、Coil、CameraX、ZXing Java core、
+Jsoup、JUnit、MockWebServer 等）各自按其原始许可证授权，不因本项目采用
+AGPL 而改变其许可。详情见 docs/third-party-notices.md 与应用内
+assets/legal/ 目录。
+
+品牌、题卡与字体
+----------------
+
+“新教育”“智能题卡”及相关名称、标识、界面文案的权利归各自权利人所有。
+旧项目中的题卡模板数据、学科列表、内置题库与 Microsoft Yahei UI 字体未取得
+随本应用再分发的明确授权，因此不随本项目源码或 APK 提供，也不从旧应用
+私有目录自动迁移。本应用不包含官方授权声明，不是新教育官方客户端。
+
+非官方声明
+----------
+
+本项目为独立的技术重写与迁移研究产物，与 LFWQSP2641、2034974607 及题卡内容
+权利人无隶属、背书或授权关系。查询题卡、上传答案等能力是否可用取决于用户
+自己的账号与服务端授权；本项目未内置的公共账号、未验证的学案资源接口不会
+作为可依赖功能提供。
+
+联系方式
+--------
+
+本交付物用于离线审阅与构建核验；发布者若对外分发二进制，应自行补充有效的
+版权联系人与 AGPL 对应源代码获取途径（AGPL 第 13 节）。

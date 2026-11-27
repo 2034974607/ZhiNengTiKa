@@ -1,0 +1,21 @@
+{
+  "fork": {
+    "repository": "https://github.com/2034974607/ZhiNengTiKa",
+    "branch": "master",
+    "commit": "ed34415b5fb893dc22a6b94a5cd14e3c2e7a457c"
+  },
+  "upstream": {
+    "repository": "https://github.com/LFWQSP2641/ZhiNengTiKa",
+    "branch": "dev",
+    "commit": "4d192e4e61a7f854c8f48be739e7cff513b6b242"
+  },
+  "comparison": {
+    "html_url": "https://github.com/2034974607/ZhiNengTiKa/compare/LFWQSP2641:dev...master",
+    "status": "diverged",
+    "ahead_by": 7,
+    "behind_by": 320,
+    "total_commits": 7
+  },
+  "legacyHistoriesModified": false,
+  "newProjectHistory": "independent root, no remote push"
+}
