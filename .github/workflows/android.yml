@@ -94,7 +94,8 @@ jobs:
           shopt -s nullglob
           settings=(android-*-deployment-settings.json)
           test "${#settings[@]}" -eq 1
-          androiddeployqt --input "${settings[0]}" --output android-build --android-platform android-31 --jdk "$JAVA_HOME" --gradle --release
+          test -x "$QT_HOST_PATH/bin/androiddeployqt"
+          "$QT_HOST_PATH/bin/androiddeployqt" --input "${settings[0]}" --output android-build --android-platform android-31 --jdk "$JAVA_HOME" --gradle --release
 
       - name: Sign and verify APK
         shell: bash
