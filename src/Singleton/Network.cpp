@@ -1,10 +1,21 @@
 #include "Network.h"
 
-Network *Network::instance;
+#include <QEventLoop>
+#include <QPointer>
+#include <QTimer>
+
+Network *Network::instance = nullptr;
+
+Network::Network()
+{
+    // A transfer is aborted after 15 seconds without receiving/sending bytes.
+    networkAccessManager.setTransferTimeout(15000);
+}
 
 void Network::initOnce()
 {
-    Network::instance = new Network;
+    if (!Network::instance)
+        Network::instance = new Network;
 }
 
 Network *Network::getInstance()
@@ -22,28 +33,50 @@ QNetworkReply *Network::postAndWaitForFinished(const QNetworkRequest &requestInf
     return Network::waitForFinished(Network::getInstance()->networkAccessManager.post(requestInfo, data));
 }
 
-QNetworkReply *Network::waitForFinished(QNetworkReply *reply)
+QNetworkReply *Network::waitForFinished(QNetworkReply *reply, int timeoutMs)
 {
+    if (!reply || reply->isFinished())
+        return reply;
+
+    QPointer<QNetworkReply> guardedReply(reply);
     QEventLoop eventLoop;
+    QTimer deadline;
+    deadline.setSingleShot(true);
+
     QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
-    if(reply->isRunning())
+    QObject::connect(reply, &QObject::destroyed, &eventLoop, &QEventLoop::quit);
+    QObject::connect(&deadline, &QTimer::timeout, &eventLoop,
+                     [&eventLoop, guardedReply]
     {
-        eventLoop.exec();
+        if (guardedReply && !guardedReply->isFinished())
+            guardedReply->abort();
+        eventLoop.quit();
+    });
+
+    // Recheck after installing the connection so a reply that finished at
+    // the boundary never enters a nested loop unnecessarily.
+    if (guardedReply && !guardedReply->isFinished())
+    {
+        deadline.start(qMax(0, timeoutMs));
+        if (guardedReply && !guardedReply->isFinished())
+            eventLoop.exec();
     }
-    return reply;
+    deadline.stop();
+    return guardedReply.data();
 }
 
 QByteArray Network::replyReadAll(QNetworkReply *reply)
 {
-    auto data{reply->readAll()};
+    if (!reply)
+        return QByteArray();
+    const auto data{reply->readAll()};
     reply->deleteLater();
     return data;
 }
 
 QByteArray Network::getReplyData(QNetworkReply *reply)
 {
-    waitForFinished(reply);
-    return replyReadAll(reply);
+    return replyReadAll(waitForFinished(reply));
 }
 
 QByteArray Network::getData(const QNetworkRequest &requestInfo)

@@ -1,10 +1,11 @@
 QT       += core widgets gui network
-VERSION = 1.8.0
+VERSION = 1.8.1
 android{
 
 QT       += core-private
 
 ANDROID_VERSION_NAME = $$VERSION
+ANDROID_VERSION_CODE = 10801
 
 RESOURCES += Resource/Resource_Android.qrc
 
@@ -90,6 +91,7 @@ HEADERS += \
     src/Logic/UserData.h \
     src/Logic/UserDataList.hpp \
     src/Singleton/AutoUpdate.h \
+    src/Singleton/UpdateRelease.h \
     src/Singleton/Network.h \
     src/StaticClass/CallAndroidNativeComponent.h \
     src/StaticClass/Global.h \

@@ -2,6 +2,47 @@
 
 #ifdef Q_OS_ANDROID
 
+namespace
+{
+bool clearJniException(const char *operation)
+{
+    QJniEnvironment environment;
+    if(!environment->ExceptionCheck())
+        return false;
+
+    environment->ExceptionClear();
+    qWarning() << "CallAndroidNativeComponent: JNI exception during" << operation;
+    return true;
+}
+
+bool queueIntent(const char *method, const QString &argument)
+{
+    if(clearJniException("entering intent bridge"))
+        return false;
+
+    QJniObject activity = QtAndroidPrivate::activity();
+    if(clearJniException("getting activity") || !activity.isValid())
+        return false;
+
+    QJniObject value = QJniObject::fromString(argument);
+    if(clearJniException("creating intent argument") || !value.isValid())
+        return false;
+
+    const jboolean accepted = QJniObject::callStaticMethod<jboolean>(
+        "com/LFWQSP2641/xinjiaoyu/IntentActivity",
+        method,
+        "(Ljava/lang/String;Lorg/qtproject/qt/android/bindings/QtActivity;)Z",
+        value.object<jstring>(),
+        activity.object<jobject>());
+    if(clearJniException("queuing intent"))
+        return false;
+
+    // The Java result only acknowledges UI dispatch, not a successful launch
+    // or a completed installation. Java reports subsequent failures with Toast.
+    return accepted == JNI_TRUE;
+}
+}
+
 QImage CallAndroidNativeComponent::takePhoto()
 {
     QtAndroidPrivate::requestPermission(QtAndroidPrivate::Camera).waitForFinished();
@@ -31,45 +72,37 @@ QImage CallAndroidNativeComponent::takePhoto()
     return image;
 }
 
-void CallAndroidNativeComponent::openUrl(const QString &url)
+bool CallAndroidNativeComponent::openUrl(const QString &url)
 {
-    QJniObject jUrl = QJniObject::fromString(url);
-    QJniObject activity = QtAndroidPrivate::activity();
-
-    QJniObject::callStaticMethod<void>(
-        "com/LFWQSP2641/xinjiaoyu/IntentActivity",
-        "openUrl",
-        "(Ljava/lang/String;Lorg/qtproject/qt/android/bindings/QtActivity;)V",
-        jUrl.object<jstring>(),
-        activity.object<jobject>()
-    );
+    return queueIntent("openUrl", url);
 }
 
-void CallAndroidNativeComponent::installApk(const QString &filePath)
+bool CallAndroidNativeComponent::installApk(const QString &filePath)
 {
-    QtAndroidPrivate::requestPermission(QtAndroidPrivate::Storage).waitForFinished();
-    QtAndroidPrivate::requestPermission(QStringLiteral("android.permission.INSTALL_PACKAGES")).waitForFinished();
-    QtAndroidPrivate::requestPermission(QStringLiteral("android.permission.REQUEST_INSTALL_PACKAGES")).waitForFinished();
-    QJniObject jFilePath = QJniObject::fromString(filePath);
-    QJniObject activity = QtAndroidPrivate::activity();
-
-    QJniObject::callStaticMethod<void>(
-        "com/LFWQSP2641/xinjiaoyu/IntentActivity",
-        "installApk",
-        "(Ljava/lang/String;Lorg/qtproject/qt/android/bindings/QtActivity;)V",
-        jFilePath.object<jstring>(),
-        activity.object<jobject>()
-    );
+    return queueIntent("installApk", filePath);
 }
 
 QString CallAndroidNativeComponent::getCacheDir()
 {
+    if(clearJniException("entering cache directory bridge"))
+        return QString();
+
     QJniObject activity = QtAndroidPrivate::activity();
-    return QJniObject::callStaticMethod<jstring>(
-               "com/LFWQSP2641/xinjiaoyu/Util",
-               "getCacheDir",
-               "(Lorg/qtproject/qt/android/bindings/QtActivity;)Ljava/lang/String;",
-               activity.object<jobject>()).toString();
+    if(clearJniException("getting activity") || !activity.isValid())
+        return QString();
+
+    QJniObject directory = QJniObject::callStaticMethod<jstring>(
+        "com/LFWQSP2641/xinjiaoyu/Util",
+        "getCacheDir",
+        "(Lorg/qtproject/qt/android/bindings/QtActivity;)Ljava/lang/String;",
+        activity.object<jobject>());
+    if(clearJniException("getting cache directory") || !directory.isValid())
+        return QString();
+
+    const QString path = directory.toString();
+    if(clearJniException("reading cache directory"))
+        return QString();
+    return path;
 }
 
 #endif // Q_OS_ANDROID

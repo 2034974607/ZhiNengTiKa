@@ -2,8 +2,8 @@
 #include "Singleton/AutoUpdate.h"
 #include "StaticClass/Global.h"
 #include "StaticClass/Setting.h"
-#include "StaticClass/CallAndroidNativeComponent.h"
 #include "Singleton/Network.h"
+#include <QTimer>
 #include "StaticClass/QRCodeScanner.h"
 
 int main(int argc, char *argv[])
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     a.setWindowIcon(QIcon(QStringLiteral(":/ico/xinjiaoyuico.png")));
 
     Setting::loadFromFile();
-    AutoUpdate::initOnce(APP_VERSION);
+    AutoUpdate::initOnce(APP_VERSION, &a);
     QRCodeScanner::initialize(Setting::jsonObjectApiQRCodeScanner);
     UserData::initPublicUserData();
 
@@ -47,33 +47,17 @@ int main(int argc, char *argv[])
         a.setFont(appFont);
     }
 
-#ifdef Q_OS_ANDROID
-    //删除新版本文件
-    QFile file(CallAndroidNativeComponent::getCacheDir() + QDir::separator() + QStringLiteral("newVersion.apk"));
-    if(file.exists())
-    {
-        file.remove();
-    }
-#else
-#endif // Q_OS_ANDROID
-
     MainWidget w;
     w.setAttribute(Qt::WA_QuitOnClose);
     w.show();
 
 #ifdef Q_OS_ANDROID
-    w.setEnabled(false);
-    auto autoUpdate(AutoUpdate::getInstance());
-    autoUpdate->checkUpdate(false);
-    if(autoUpdate->checkMinimumVersion())
+    // Updates are optional and start only after the main event loop is running.
+    // A failed network request must never disable the application's controls.
+    QTimer::singleShot(0, AutoUpdate::getInstance(), []
     {
-        w.setEnabled(true);
-    }
-    else
-    {
-        QMessageBox::warning(&w, QStringLiteral("warning"), QStringLiteral("请更新版本或检查网络连接"));
-        QApplication::exit(1);
-    }
+        AutoUpdate::getInstance()->checkUpdate(false);
+    });
 #endif // Q_OS_ANDROID
 
     return a.exec();

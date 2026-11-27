@@ -4,6 +4,8 @@ release/*
 .qmake.stash
 xinjiaoyu.pro.user
 /build/
+/build-tests/
+/build-network-tests/
 /dist/
 /third_party/Qt-AES/
 /third_party/android_openssl/

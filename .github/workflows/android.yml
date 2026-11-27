@@ -8,6 +8,7 @@ on:
       - 'android/**'
       - 'Resource/**'
       - 'src/**'
+      - 'tests/**'
       - 'xinjiaoyu.pro'
   workflow_dispatch:
     inputs:
@@ -54,7 +55,10 @@ jobs:
         run: |
           version=$(sed -n 's/^VERSION = //p' xinjiaoyu.pro)
           [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          version_code=$(sed -n 's/^ANDROID_VERSION_CODE = //p' xinjiaoyu.pro)
+          [[ "$version_code" =~ ^[1-9][0-9]*$ ]]
           echo "value=$version" >> "$GITHUB_OUTPUT"
+          echo "code=$version_code" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-java@v4
         with:
@@ -83,6 +87,21 @@ jobs:
           modules: qtwebview qtshadertools
           cache: true
 
+      - name: Run update regression tests
+        shell: bash
+        run: |
+          mkdir -p build-tests
+          cd build-tests
+          "$QT_HOST_PATH/bin/qmake" ../tests/tests.pro
+          make -j2
+          ./test_updaterelease
+          cd ..
+          mkdir -p build-network-tests
+          cd build-network-tests
+          "$QT_HOST_PATH/bin/qmake" ../tests/network_tests.pro
+          make -j2
+          ./test_network
+
       - name: Configure and compile
         shell: bash
         run: |
@@ -104,6 +123,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           VERSION: ${{ steps.version.outputs.value }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
         run: |
           test -n "$KEYSTORE_BASE64" || { echo 'Missing Android signing secrets.' >&2; exit 1; }
           umask 077
@@ -121,6 +141,7 @@ jobs:
           "$tools/aapt" dump badging "$apk" | tee "$RUNNER_TEMP/apk-badging.txt"
           grep -F "name='com.LFWQSP2641.xinjiaoyu'" "$RUNNER_TEMP/apk-badging.txt"
           grep -F "versionName='$VERSION'" "$RUNNER_TEMP/apk-badging.txt"
+          grep -F "versionCode='$VERSION_CODE'" "$RUNNER_TEMP/apk-badging.txt"
           grep -F "native-code: 'arm64-v8a'" "$RUNNER_TEMP/apk-badging.txt"
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
 
