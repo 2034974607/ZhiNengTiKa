@@ -21,6 +21,7 @@
 - [app](app/build.gradle.kts)：Compose 界面、CameraX、Android Keystore AES-GCM、本地存储与 SAF 导入导出。
 - [protocol](protocol/build.gradle.kts)：纯 Kotlin/JVM 模型、AES/摘要、HTTP 协议、受限解析、离线格式与 HTML 导出；合成测试不连接业务服务。
 - [构建脚本](tools/build-android.py)、[APK 核验](tools/verify-apks.py)与[交付打包](tools/package-delivery.py)：保留实际构建与产物证据。
+- [设备验收方案](docs/device-acceptance.md)与[验收脚本](tools/acceptance-device.py)：默认只生成可审查的命令计划；显式选择已授权测试设备后才安装、运行两个 UI 测试及基础启动/PSS 采样。脚本的[主机合成检查](tools/check-device-acceptance.py)独立于设备测试。
 - [结构与数据流](docs/architecture.md)、[业务对照](docs/feature-comparison.md)、[协议](docs/protocol.md)、[迁移](docs/migration.md)、[隐私](docs/privacy.md)、[第三方许可](docs/third-party-notices.md)与[已知问题](docs/known-issues.md)。
 
 常规 Android 开发机先准备 JDK 17、官方 platform 35 与 build-tools 34.0.0，再运行：

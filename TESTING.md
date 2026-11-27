@@ -58,9 +58,21 @@ adb shell am instrument -w \
 
 不要使用已存真实账号或作业数据的设备做未经审查的测试。现有两个测试只操作新 App 的界面与明确标注的合成示例。
 
+## 验收脚本的主机合成检查
+
+[设备验收脚本](tools/acceptance-device.py)默认只生成计划；[方案与前置条件](docs/device-acceptance.md)说明安装、两个 UI 测试及 Release 启动/PSS 采集的范围。只有显式 `--run`、实际 serial 和符合条件的已授权测试设备才执行设备步骤；脚本拒绝覆盖已有包或保留数据，遇到失败或结果未知就停止。
+
+```sh
+python3 tools/check-device-acceptance.py
+```
+
+[合成检查脚本](tools/check-device-acceptance.py)使用人工输出及模拟进程验证 instrumentation 状态/测试身份、启动组件与测量分类、包存在性和用户检查顺序，以及超时、Ctrl-C、SIGTERM、IO 错误后停止。交付证据 `device-runner-selfcheck.json` 保留本次实际运行的检查明细；它报告 ADB 进程数为 0、设备测试未执行。这组检查不属于上述 32 个 JVM 测试，也不证明 Android 设备行为。
+
+本次收尾只修改验收工具、交付脚本与文档，未修改 Android / protocol 模块和 Gradle 构建输入；复用已经核验的三个 APK，摘要与上一份交付一致，没有把本次打包记作重新构建。
+
 ## 本次设备控制限制
 
-本机构建工具包中的 ARM64 adb 能执行 `version`，不代表已连接 Android。此前对手机授权 shell 的一次只读调用返回 `shizukuStopped`（`started:false`，没有命令执行），恢复设备通道的交接也被停止。本轮读屏仍返回“无障碍服务未连接”；随后 Android shell 的只读身份/API 探测返回 `cancelled`、`started:false`，没有命令执行。未改写重试或切换通道重放。因此尚未安装或启动本版 App，没有取得真实触控、截图、logcat、相机或系统权限结果。交付证据另附 `device-validation.json`，记录这一区别。
+本机构建工具包中的 ARM64 adb 能执行 `version`，不代表已连接 Android。此前对手机授权 shell 的一次只读调用返回 `shizukuStopped`（`started:false`，没有命令执行），恢复设备通道的交接也被停止。之后最近一次读屏返回“无障碍服务未连接”；Android shell 的只读身份/API 探测返回 `cancelled`、`started:false`，没有命令执行。没有改写重试或切换通道重放，本次打包也未重新探测设备。因此尚未安装或启动本版 App，没有取得真实触控、截图、logcat、相机或系统权限结果。交付证据另附 `device-validation.json`，记录这一区别。
 
 ## 真机验收清单（待执行）
 

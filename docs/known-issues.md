@@ -6,7 +6,8 @@
 - **最终 APK：已生成且静态检查通过**。Debug、独立签名并经过 R8/资源收缩的 Release，以及 Debug instrumentation 测试 APK 均通过签名、包名/版本、API 26 / 35、ZIP 完整性和对齐检查；64 位原生库的 16 KiB ELF/ZIP 对齐已核验。
 - **最终签名构建：成功**。最后草稿、权限、主题、备份声明与相册重选提示已编入产物。Debug / Release Lint 均无错误，警告及跳过的自定义规则完整保留；准确计数以最终测试报告和原始 XML 为准。
 - **Instrumentation：两个测试已编译，未执行**。主页/账号导航、离线示例无作业入口的测试需要实际设备或模拟器；编译不等于测试运行通过。
-- **设备与生产服务：均未执行**。没有本版安装、启动、真实 UI 操作、相机、系统权限、登录、取题、上传或答卷提交结果。此前手机 shell 返回 `shizukuStopped`（`started:false`）；本轮只读探测返回 `cancelled`、`started:false`，均没有执行命令，未改写重试或切换后端重放。读屏仍报告无障碍不可用，ARM64 adb 能显示版本不表示设备已连接。
+- **设备与生产服务：均未执行**。没有本版安装、启动、真实 UI 操作、相机、系统权限、登录、取题、上传或答卷提交结果。此前手机 shell 返回 `shizukuStopped`（`started:false`）；最近一次只读探测返回 `cancelled`、`started:false`，均没有执行命令，未改写重试或切换后端重放。最近一次读屏报告无障碍不可用，本次打包没有重新探测设备；ARM64 adb 能显示版本不表示设备已连接。
+- **验收工具：已准备，尚未在设备上运行**。[执行方案](device-acceptance.md)与[默认仅生成计划的脚本](../tools/acceptance-device.py)覆盖干净测试设备安装、两个合成 UI 测试及基础启动/PSS 记录。[主机合成检查](../tools/check-device-acceptance.py)验证解析与异常停止，不计作真机通过数。本次只更新这些工具、交付脚本与报告，Android / protocol 源码及 Gradle 输入未变，复用已有 APK。
 
 最终产物与验证记录以[测试报告](../TESTING.md)及交付证据为准；工具链来源、许可和架构边界见[构建说明](../BUILDING.md)。
 

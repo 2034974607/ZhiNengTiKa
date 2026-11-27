@@ -115,6 +115,19 @@ python3 tools/verify-apks.py
 
 脚本对 Debug、Release、UI 测试 APK 执行官方 `apksigner.jar` 验签、aapt2 metadata / manifest 检查、原生 zipalign 的 16 KiB 检查、ZIP CRC 与 ELF LOAD 对齐检查；输出 SHA-256、公开证书指纹、原生库清单与原始检查输出，不读取业务账号。未安装设备，也不声称完成 UI 验收。
 
+## 设备验收准备
+
+[验收脚本](tools/acceptance-device.py)可对完整交付目录生成命令计划；默认不启动 ADB。先运行[主机合成检查](tools/check-device-acceptance.py)，再参照[设备验收方案](docs/device-acceptance.md)确认测试设备、用户和包状态。`--run` 会安装三个 APK 并操作应用，需要明确选定已授权设备；计划生成和合成检查均不算设备验收。
+
+```sh
+python3 tools/check-device-acceptance.py
+python3 tools/acceptance-device.py \
+  --delivery /path/to/unpacked-delivery \
+  --output /path/to/new-plan.json
+```
+
+本次补充验收工具和报告，复用已经核验且摘要不变的三个 APK；Android 源码和 Gradle 构建输入未改动，没有重新构建 APK。新交付源码提交包含这些验收工具，成功构建日志仍保留原构建时间。
+
 ## 下载来源与固定摘要
 
 | 工具 | 来源 | 校验 |
@@ -138,6 +151,8 @@ python3 tools/package-delivery.py \
   --build-log artifacts/logs/实际成功日志.log
 ```
 
-脚本检查 APK SHA-256 未在验签后改变、32 项协议测试全部通过、Debug/Release Lint 没有错误、依赖清单与许可清单一致；在手机 Download/DSH-Go 下新建带时间与提交号的目录，拒绝覆盖同名交付。目录包含三个 APK、完整源码 ZIP、独立 Git bundle、报告 ZIP、R8 mapping、公开证书、构建/测试原始证据和 SHA256SUMS。私钥、密码、SDK 和依赖缓存不进入交付。
+脚本检查 APK SHA-256 未在验签后改变、32 项协议测试全部通过、Debug/Release Lint 没有错误、依赖清单与许可清单一致；重新执行验收脚本的主机合成检查，并在交付报告中生成默认命令计划，全程不启动 ADB。在手机 Download/DSH-Go 下新建带时间与提交号的目录，拒绝覆盖同名交付。目录包含三个 APK、完整源码 ZIP、独立 Git bundle、报告 ZIP、R8 mapping、公开证书、构建/测试原始证据和 SHA256SUMS。私钥、密码、SDK 和依赖缓存不进入交付。
+
+只补充文档或验收工具、复用此前已交付的 APK 时，额外传入 `--apk-source-commit 原交付源码提交`。脚本比较 `app/`、`protocol/`、`gradle/`、根 Gradle 配置、wrapper 和构建入口，任何差异都要求先重新构建；清单记录 APK 输入提交、交付源码提交与复用状态。本次对应的原交付提交为 `0ab8540670f1d53ee90a9574d83dc4af35adfe1c`。默认计划使用占位 serial，只供审查；设备移动或交付目录变化后重新生成，运行记录则采用 JSONL。
 
 可用 `git clone 交付的.git.bundle 新目录` 恢复独立历史；直接解压源码 ZIP 也可构建。复现 Release 时需要维护者妥善保存的同一签名私钥；源码和公开证书不能恢复私钥。交付清单记录源码提交与最终构建日志，设备与真实服务验证仍以[测试报告](TESTING.md)的状态为准。

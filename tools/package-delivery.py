@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -85,6 +86,7 @@ def lint_summary(variant):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-log", type=Path, required=True, help="Successful final build log inside this project")
+    parser.add_argument("--apk-source-commit", help="Earlier delivered source commit when repackaging unchanged APK build inputs; defaults to HEAD")
     parser.add_argument("--destination", type=Path, default=Path("/sdcard/Download/DSH-Go"))
     args = parser.parse_args()
     log = args.build_log.resolve()
@@ -98,6 +100,23 @@ if __name__ == "__main__":
     if git("status", "--porcelain", "--untracked-files=all"):
         raise SystemExit("Commit all intended source and documentation changes before packaging")
     commit = git("rev-parse", "HEAD")
+    apk_source_commit = git("rev-parse", "--verify", "--end-of-options", (args.apk_source_commit or commit) + "^{commit}")
+    build_inputs = ["app", "protocol", "gradle", "build.gradle.kts", "settings.gradle.kts",
+                    "gradle.properties", "gradlew", "gradlew.bat", "tools/build-android.py"]
+    if git("diff", "--name-only", apk_source_commit, commit, "--", *build_inputs):
+        raise SystemExit("APK build inputs changed since --apk-source-commit; rebuild and verify APKs first")
+    runner_check = subprocess.run([sys.executable, str(ROOT / "tools/check-device-acceptance.py")],
+                                  cwd=ROOT, check=True, capture_output=True, text=True)
+    runner_evidence = json.loads(runner_check.stdout)
+    if (runner_evidence.get("kind") != "synthetic-host-runner-checks"
+            or runner_evidence.get("adbProcessesStarted") != 0
+            or runner_evidence.get("deviceTestsExecuted") is not False
+            or not runner_evidence.get("checks")
+            or runner_evidence.get("passedChecks") != len(runner_evidence["checks"])):
+        raise SystemExit("Acceptance-runner host checks did not produce the expected complete result")
+    runner_evidence["executedAtUtc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    runner_evidence["sourceSha256"] = {
+        name: sha(ROOT / name) for name in ["tools/acceptance-device.py", "tools/check-device-acceptance.py"]}
     source_files = git("ls-files").splitlines()
     forbidden_parts = {".git", ".gradle", ".kotlin", "android-sdk", "arm64-sdk-tools", "downloads", "artifacts", "__pycache__"}
     for name in source_files:
@@ -151,9 +170,16 @@ if __name__ == "__main__":
     copy_tree(ROOT / "docs", reports / "docs")
     # Keep the source references in the reports readable without extracting the source ZIP.
     for name in ["app/build.gradle.kts", "protocol/build.gradle.kts", "tools/build-android.py",
-                 "tools/verify-apks.py", "tools/package-delivery.py"]:
+                 "tools/verify-apks.py", "tools/package-delivery.py", "tools/acceptance-device.py",
+                 "tools/check-device-acceptance.py"]:
         copy_file(ROOT / name, reports / name)
     copy_tree(ROOT / "artifacts/evidence", reports / "evidence")
+    with (reports / "evidence/device-runner-selfcheck.json").open("x", encoding="utf-8") as stream:
+        json.dump(runner_evidence, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    subprocess.run([sys.executable, str(ROOT / "tools/acceptance-device.py"), "--delivery", str(delivery),
+                    "--output", str(reports / "evidence/device-acceptance-plan.json")],
+                   cwd=ROOT, check=True, capture_output=True, text=True)
     copy_tree(ROOT / "artifacts/logs", reports / "build-logs")
     copy_tree(ROOT / "protocol/build/test-results/test", reports / "jvm-test-results")
     copy_tree(ROOT / "protocol/build/reports/tests/test", reports / "jvm-test-report")
@@ -174,7 +200,13 @@ if __name__ == "__main__":
         "sourceCommitCount": int(git("rev-list", "--count", "HEAD")),
         "gitRemotes": git("remote").splitlines(),
         "finalBuildLog": f"reports/build-logs/{log.name}",
+        "apkBuildInputs": {"sourceCommit": apk_source_commit, "matchesDeliverySource": True,
+                           "pathsCompared": build_inputs, "reusedApks": apk_source_commit != commit},
         "jvmTests": tests, "lint": lint,
+        "deviceAcceptance": {"plan": "reports/evidence/device-acceptance-plan.json",
+                             "runnerSelfcheck": "reports/evidence/device-runner-selfcheck.json",
+                             "runnerHostChecksPassed": runner_evidence["passedChecks"],
+                             "planExecutesDeviceCommands": False},
         "apkVerification": "reports/evidence/apk-verification.json",
         "deviceTestsExecuted": verification.get("deviceTestsExecuted", False),
         "realServiceTestsExecuted": False,
@@ -183,7 +215,7 @@ if __name__ == "__main__":
                         "Synthetic host-JVM benchmark is not Android UI performance or a comparison with Qt."],
     }
     (delivery / "delivery-manifest.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n")
-    readme = f"""# 新教育智能题卡 原生版 1.0.0 交付\n\n源码提交：`{commit}`（独立新历史，无远端推送）。\n\n- [Release APK]({names[1]})：日常安装入口，独立签名，启用 R8。\n- [Debug APK]({names[0]})：开发与 UI 测试使用，与 Release 分包。\n- [UI 测试 APK]({names[2]})：配合 Debug 安装，不是单独的应用。\n- [完整源码 ZIP]({source_zip.name})：包含 Gradle wrapper、构建脚本、测试与许可。\n- [独立 Git bundle]({bundle.name})：可用 `git clone 文件路径 新目录` 恢复新历史。\n- [构建与签名](reports/BUILDING.md)、[测试](reports/TESTING.md)、[性能](reports/PERFORMANCE.md)。\n- [功能对照](reports/docs/feature-comparison.md)、[协议](reports/docs/protocol.md)、[已知问题](reports/docs/known-issues.md)。\n- [交付清单](delivery-manifest.json)、[APK 签名与对齐证据](reports/evidence/apk-verification.json)。\n\nJVM 合成测试 {tests['tests']} 项通过；Debug / Release Lint 无错误，保留全部警告。\n真实账号与服务端互操作未测试；设备运行状态以测试报告为准。未包含签名私钥或密码。\n将所有文件留在同一目录可保持上述相对链接。报告压缩包内也包含同一套文档与证据。\n"""
+    readme = f"""# 新教育智能题卡 原生版 1.0.0 交付\n\n源码提交：`{commit}`（独立新历史，无远端推送）。\n\n- [Release APK]({names[1]})：日常安装入口，独立签名，启用 R8。\n- [Debug APK]({names[0]})：开发与 UI 测试使用，与 Release 分包。\n- [UI 测试 APK]({names[2]})：配合 Debug 安装，不是单独的应用。\n- [完整源码 ZIP]({source_zip.name})：包含 Gradle wrapper、构建脚本、测试与许可。\n- [独立 Git bundle]({bundle.name})：可用 `git clone 文件路径 新目录` 恢复新历史。\n- [构建与签名](reports/BUILDING.md)、[测试](reports/TESTING.md)、[性能](reports/PERFORMANCE.md)。\n- [功能对照](reports/docs/feature-comparison.md)、[协议](reports/docs/protocol.md)、[已知问题](reports/docs/known-issues.md)。\n- [设备验收方案](reports/docs/device-acceptance.md)、[默认命令计划](reports/evidence/device-acceptance-plan.json)、[验收脚本合成检查](reports/evidence/device-runner-selfcheck.json)。\n- [交付清单](delivery-manifest.json)、[APK 签名与对齐证据](reports/evidence/apk-verification.json)。\n\nJVM 合成测试 {tests['tests']} 项通过；Debug / Release Lint 无错误，保留全部警告。\n验收脚本主机合成检查 {runner_evidence['passedChecks']} 项通过，未启动 ADB；附带的计划未执行设备命令。\nAPK 构建输入对应源码提交 `{apk_source_commit}`，已与本交付的 Android / protocol 模块、Gradle 输入及构建入口逐项比较一致；新交付包含补充验收工具与文档，不把重新打包算作新的 APK 构建。\n真实账号与服务端互操作未测试；设备运行状态以测试报告为准。未包含签名私钥或密码。\n将所有文件留在同一目录可保持上述相对链接。报告压缩包内也包含同一套文档与证据。\n"""
     (delivery / "交付说明.md").write_text(readme)
     zip_tree(reports, delivery / "ZhiNengTiKa-native-1.0.0-reports.zip")
     all_files = sorted(file for file in delivery.rglob("*") if file.is_file())
