@@ -17,7 +17,7 @@ git clone https://github.com/KDAB/android_openssl.git third_party/android_openss
 git -C third_party/android_openssl checkout b71f1470962019bd89534a2919f5925f93bc5779
 ```
 
-设置 `ANDROID_SDK_ROOT`、`ANDROID_NDK_ROOT`、`JAVA_HOME`，将目标 Qt 的 `bin` 加入 `PATH`，然后构建：
+设置 `ANDROID_SDK_ROOT`、`ANDROID_NDK_ROOT`、`JAVA_HOME` 和指向同版本桌面 Qt 安装目录的 `QT_HOST_PATH`（例如 `/opt/Qt/6.4.3/gcc_64`），将目标 Android Qt 的 `bin` 加入 `PATH`，然后构建：
 
 ```sh
 mkdir -p build
@@ -25,7 +25,7 @@ cd build
 qmake ../xinjiaoyu.pro CONFIG+=release ANDROID_ABIS=arm64-v8a ANDROID_PLATFORM=android-31
 make -j2
 make INSTALL_ROOT="$PWD/android-build" install
-androiddeployqt --input android-xinjiaoyu-deployment-settings.json --output android-build --android-platform android-31 --jdk "$JAVA_HOME" --gradle --release
+"$QT_HOST_PATH/bin/androiddeployqt" --input android-xinjiaoyu-deployment-settings.json --output android-build --android-platform android-31 --jdk "$JAVA_HOME" --gradle --release
 ```
 
 随后使用 Android SDK 的 `zipalign`、`apksigner` 和自己的长期签名密钥对 APK 对齐、签名并验证。不要将密钥、密钥密码或已解码的密钥文件提交到仓库。
