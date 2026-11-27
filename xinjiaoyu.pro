@@ -8,7 +8,13 @@ ANDROID_VERSION_NAME = $$VERSION
 
 RESOURCES += Resource/Resource_Android.qrc
 
-include(D:/Softwares/scr/AndroidSDK/android_openssl/openssl.pri)
+include($$PWD/third_party/android_openssl/openssl.pri)
+
+QT += qml quick webview
+DEFINES += USE_QTWEBVIEW
+HEADERS += src/GUI/AndroidWebView.h
+SOURCES += src/GUI/AndroidWebView.cpp
+RESOURCES += Resource/AndroidWebView.qrc
 
 ANDROID_PACKAGE_SOURCE_DIR = \
     $$PWD/android
@@ -51,8 +57,12 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-include(D:/Softwares/scr/Qt-AES/QAESEncryption.pri)
-include(D:/Softwares/scr/WebView/WebView.pri)
+INCLUDEPATH += $$PWD/third_party/Qt-AES
+HEADERS += $$PWD/third_party/Qt-AES/qaesencryption.h
+SOURCES += $$PWD/third_party/Qt-AES/qaesencryption.cpp
+
+# Android uses the in-tree Qt WebView wrapper; keep the original desktop setup.
+!android:include(D:/Softwares/scr/WebView/WebView.pri)
 
 HEADERS += \
     src/GUI/AnswerAndAnalysisWidget.h \

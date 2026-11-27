@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/webview">
+        <file>AndroidWebView.qml</file>
+    </qresource>
+</RCC>

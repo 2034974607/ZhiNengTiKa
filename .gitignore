@@ -3,3 +3,9 @@ debug/*
 release/*
 .qmake.stash
 xinjiaoyu.pro.user
+/build/
+/dist/
+/third_party/Qt-AES/
+/third_party/android_openssl/
+*.keystore
+*.jks

@@ -25,7 +25,14 @@
 #include <QJniObject>
 #endif // Q_OS_ANDROID
 
-#include "D:/Softwares/scr/Qt-AES/qaesencryption.h"
+#include "qaesencryption.h"
+#ifdef Q_OS_ANDROID
+#include <QtWebView/QtWebView>
+#include <QQuickWindow>
+#include <QSGRendererInterface>
+#include "GUI/AndroidWebView.h"
+#else
 #include "D:/Softwares/scr/WebView/WebView.h"
+#endif
 
 #endif // PCH_H
