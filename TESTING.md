@@ -1,6 +1,12 @@
 # 测试与验收
 
-## 已执行的本地测试
+## 1.0.1 离线整库修复回归
+
+本轮新增的文件存储（17 项）、科目识别（6 项）与批量导入（5 项）测试，与原 32 项一起重新执行：**60 项通过，0 失败、0 错误、0 跳过**。本轮手机操作已停止，未执行新的手机安装、SAF 导入或 instrumentation；已编译的新 UI 测试不记为设备测试通过。另以真实提取 ZIP 调用产品 `OfflineLibraryImporter` 与 `FileOfflineTemplateStore`，在主机 JVM 使用 AES-GCM 实际落盘：旧 100 张迁移后补入 419 张并更新 100 张，最终 519 张；目录 519 条，六科数量为 67/101/87/111/84/69，重启后全部 7,355 道题可读。再次导入为 0 新增 / 519 更新，没有重复题卡，旧 ID 保留。目录列表只解密一个元数据索引，打开单卡只解密索引和该卡。
+
+验收报告为 `protocol/build/reports/offline-library-verification.json`，复现命令见[离线资料库](docs/offline-library.md)。以上是主机导入/存储验证；本轮 Android UI、SAF 和 Keystore 的实际执行范围以修复版交付报告为准，下方真机记录属于 1.0.0，不能直接算作 1.0.1 的验收。
+
+## 1.0.0 已执行的本地测试（历史）
 
 `protocol` 模块使用 JDK 17、JUnit 4 和本机 MockWebServer，全部夹具为人工构造的合成数据。最近一次协议测试实际执行 **32 个，32 通过，0 失败，0 错误，0 跳过**。报告路径：`protocol/build/test-results/test/`、`protocol/build/reports/tests/test/`，交付证据内保留 JUnit XML 和日志。2026-11-28 的末次构建仅升级 Android UI 测试依赖并补充验收工具/文档，协议源码未变；`:protocol:test` 为 Gradle `UP-TO-DATE`，不能写作本轮重新执行 32 项。
 

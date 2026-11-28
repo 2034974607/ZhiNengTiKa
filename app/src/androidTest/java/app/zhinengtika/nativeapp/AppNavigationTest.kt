@@ -27,6 +27,17 @@ class AppNavigationTest {
     }
 
     @Test
+    fun offlineDirectoryAndSubjectNavigationAreVisibleAboveTheList() {
+        compose.onNodeWithContentDescription("离线资料库").performClick()
+        compose.onNodeWithText("整库 ZIP").assertIsDisplayed()
+        compose.onNodeWithText("目录（", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("题卡（", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("语文").assertIsDisplayed()
+        compose.onNodeWithText("数学").assertIsDisplayed()
+        compose.onNodeWithText("other", substring = true).assertDoesNotExist()
+    }
+
+    @Test
     fun offlineSyntheticCardNeverOffersSubmission() {
         compose.onNodeWithContentDescription("离线资料库").performClick()
         compose.onNodeWithText("导入题卡").assertIsDisplayed()

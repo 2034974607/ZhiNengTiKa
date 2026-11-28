@@ -20,6 +20,7 @@ import org.jsoup.safety.Safelist
 data class ImportedTemplate(
     val card: TemplateCard,
     val warnings: List<String>,
+    val subject: String? = null,
 )
 
 @Serializable
@@ -42,6 +43,7 @@ object TemplateTransfer {
     private const val MAX_JSON_DEPTH = 64
     private const val READ_ONLY_WARNING = "导入题卡仅供离线阅读，不能作为在线提交或账号身份的依据。"
     private const val STRIPPED_WARNING = "只保留题目内容；历史答卷、账号资料和其他元数据不会导入。"
+    val importNotices: List<String> = listOf(READ_ONLY_WARNING, STRIPPED_WARNING)
     private val codePattern = Regex("[A-Za-z0-9][A-Za-z0-9_.()\\-]{0,127}")
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -74,7 +76,8 @@ object TemplateTransfer {
         } else {
             importLegacy(root, fallbackCode, warnings)
         }
-        return ImportedTemplate(card, warnings.toList())
+        val subject = root.stringAt("subject") ?: root.objectAt("data")?.stringAt("subject")
+        return ImportedTemplate(card, warnings.toList(), subject)
     }
 
     fun importJson(text: String, fallbackCode: String? = null): ImportedTemplate =
