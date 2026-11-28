@@ -2,7 +2,7 @@
 
 ## 已执行的本地测试
 
-`protocol` 模块使用 JDK 17、JUnit 4 和本机 MockWebServer，全部夹具为人工构造的合成数据。最近一次协议测试实际执行 **32 个，32 通过，0 失败，0 错误，0 跳过**。报告路径：`protocol/build/test-results/test/`、`protocol/build/reports/tests/test/`，交付证据内保留 JUnit XML 和日志。最后一轮修改仅涉及 Android 界面/声明与交付文件；最终构建对未变更的协议测试使用 Gradle `UP-TO-DATE`，不将缓存命中写成新增执行次数。
+`protocol` 模块使用 JDK 17、JUnit 4 和本机 MockWebServer，全部夹具为人工构造的合成数据。最近一次协议测试实际执行 **32 个，32 通过，0 失败，0 错误，0 跳过**。报告路径：`protocol/build/test-results/test/`、`protocol/build/reports/tests/test/`，交付证据内保留 JUnit XML 和日志。2026-11-28 的末次构建仅升级 Android UI 测试依赖并补充验收工具/文档，协议源码未变；`:protocol:test` 为 Gradle `UP-TO-DATE`，不能写作本轮重新执行 32 项。
 
 | 范围 | 数量 | 关键断言 |
 |---|---:|---|
@@ -37,59 +37,55 @@ python3 tools/build-android.py -- :protocol:test
 
 Navigation 2.8.9 自带的部分自定义 Lint 检查与当前 Lint API 不兼容，会报告 `ObsoleteLintCustomCheck` 并跳过对应 Navigation 检查。这是静态分析覆盖的已知限制，不影响 APK 构建；最终报告保留原始警告，不写作“全部规则覆盖”。
 
-最终 Debug 与 Release 均为 **0 错误、4 警告、3 提示**：三个 Navigation 自定义注册器过旧警告，一个最低版本已为 26 时 `mipmap-anydpi-v26` 多余的资源目录警告；提示为三个整型状态装箱建议。最终强制刷新 Release 分析与报告后，旧备份声明警告已消失，APK 摘要保持不变。完整签名构建耗时 11 分 1 秒，末次静态报告刷新耗时 2 分 21 秒；原始日志均附于交付报告。
+最终 Debug 与 Release 均为 **0 错误、4 警告、3 提示**：三个 Navigation 自定义注册器过旧警告，一个最低版本已为 26 时 `mipmap-anydpi-v26` 多余的资源目录警告；提示为三个整型状态装箱建议。早前 API/备份声明修正、11 分 1 秒签名构建及 2 分 21 秒静态报告刷新保留为历史记录。2026-11-28 升级测试依赖后的完整签名构建成功，用时 **4 分 27 秒**，135 项任务中 29 项执行、106 项 `UP-TO-DATE`，日志为交付报告 `build-logs/20261128T043932.019568Z.log`。Debug 摘要不变，Release 因版本控制元数据变化而摘要改变，测试 APK 因依赖更新而变化；三个最终 APK 已重新静态核验，不声称逐字节可重复构建。
 
-## Instrumentation 测试（已编译，尚未执行）
+## Instrumentation 测试（真机已执行）
 
-`AppNavigationTest` 包含两个 Compose 测试：主页查询按钮状态及账号表单导航；离线合成示例进入详情后始终只读且没有“作业”入口。测试 APK 编译通过不代表测试运行通过。
+2026-11-28 在 OPPO PHY120、Android 17 / API 37、arm64-v8a、Android user0 上实际执行 `AppNavigationTest`。手机另有 user999（MultiApp），三个应用包均不在该用户安装；本轮使用用户重新明确授权的手机工具与 Shizuku shell（uid0），每次应用操作明确限定 user0。
 
-连接自己控制的测试设备后：
+| 确切测试方法 | 断言范围 | 最终结果 |
+|---|---|---|
+| `homeShowsQueryAndAccountNavigationOpensLoginForm` | 空编号查询禁用；账号导航显示登录表单和密码标签 | 通过 |
+| `offlineSyntheticCardNeverOffersSubmission` | 载入内置合成题卡、打开只读详情、没有“作业”入口、有“全部”页 | 通过 |
 
-```sh
-./gradlew :app:connectedDebugAndroidTest
-```
+最终测试 APK 使用 Espresso 3.7.0、runner 1.7.0、JUnit 扩展 1.3.0。两个方法各有状态码 `1` 开始与 `0` 成功，最终 `OK (2 tests)`、`INSTRUMENTATION_CODE: -1`，**2 开始、2 通过、0 失败、0 跳过**，JUnit 报告耗时 6.206 秒。完整输出与摘要存于交付报告的 `evidence/device-20261128/instrumentation-final-stdout.txt` 和 `session-final.json`；APK 摘要见[真机记录](docs/device-results-20261128.md)。这仅覆盖 Debug 的两个场景，不能记为 Release instrumentation 或全部验收通过。
 
-或安装对应 Debug 与测试 APK，再执行：
+此前 Espresso 3.5.0 的两个测试实际开始并均失败，原因是测试基础设施初始化时反射不存在的 `InputManager.getInstance()`；**旧结果为 0 通过、2 失败**，失败摘录保留且明确不是完整原始 stdout。官方[修复提交](https://github.com/android/android-test/commit/fddcda4adc8eaba515fbf2d790cf8dfe5c1b722d)在现代 Android 上改用 `Context.getSystemService(InputManager.class)`。本轮只升级测试依赖和相应锁/许可清单，业务实现、Compose 版本与 Release 运行依赖未变，没有降低断言或跳过测试。
 
-```sh
-adb shell am instrument -w \
-  app.zhinengtika.nativeapp.debug.test/androidx.test.runner.AndroidJUnitRunner
-```
+测试前单独观察 Debug 稳定显示未登录、无已保存账号、无最近访问、离线库/目录均为空且没有存储错误。应用启动会读取自己的加密账号存储；测试没有输入凭据或点击登录。第二项测试会在 Debug 私有离线库创建或刷新内置合成示例，**测试存在本地写入**，结束后示例保留。Release 与 Debug 私有存储分开；离线详情不接收账号、不读写在线草稿/提交标记。没有触发线上业务操作，也没有抓包，不能据此宣称验证了零网络。
 
-不要使用已存真实账号或作业数据的设备做未经审查的测试。现有两个测试只操作新 App 的界面与明确标注的合成示例。
+## 安装、设备通道与异常记录
+
+Release/Debug 起初已经安装，先核对其摘要精确匹配旧交付，未重新安装 Debug；新装测试包后，因测试依赖修复而在保留数据的前提下更新 Release 与测试包，并再次核对最终安装摘要。全程没有卸载或清数据。旧版[验收脚本](tools/acceptance-device.py)要求干净单用户设备，本设备既有 user999 又有现存包，**该脚本和旧 48 条命令计划从未执行**。本次是独立、明确限定 user0 的受限验收，不证明 user999 或跨用户隔离。
+
+初次安装命令因 `pm` 对 `-` 的解析返回 255；只读确认包仍不存在后修正为 `-- -` 才完成安装。初次 `am` 启动因 shell 缺少 `BOOTCLASSPATH` / `DEX2OATBOOTCLASSPATH` 在 Java VM 创建前中止（134），未观察到测试开始；确认没有活动 instrumentation 后，仅为当前命令从 zygote 导入两个标准变量，没有更改系统配置。另一批性能命令因 Binder 输出直接定向共享存储而失败，包装未在首错停止；这批有效样本为 0，未计入结果。只读诊断后以管道捕获并校验状态/PID，得到后续有效记录。各类失败与最终成功分别保留，不以 shell 退出码单独判断业务成功。
+
+早前 `shizukuStopped`、无障碍不可用和取消调用保留为历史；本次是在新的明确授权下恢复通道后执行，并非自动重放取消操作。[设备验收方案](docs/device-acceptance.md)说明后续授权与状态核实要求。
 
 ## 验收脚本的主机合成检查
-
-[设备验收脚本](tools/acceptance-device.py)默认只生成计划；[方案与前置条件](docs/device-acceptance.md)说明安装、两个 UI 测试及 Release 启动/PSS 采集的范围。只有显式 `--run`、实际 serial 和符合条件的已授权测试设备才执行设备步骤；脚本拒绝覆盖已有包或保留数据，遇到失败或结果未知就停止。
 
 ```sh
 python3 tools/check-device-acceptance.py
 ```
 
-[合成检查脚本](tools/check-device-acceptance.py)使用人工输出及模拟进程验证 instrumentation 状态/测试身份、启动组件与测量分类、包存在性和用户检查顺序，以及超时、Ctrl-C、SIGTERM、IO 错误后停止。交付证据 `device-runner-selfcheck.json` 保留本次实际运行的检查明细；它报告 ADB 进程数为 0、设备测试未执行。这组检查不属于上述 32 个 JVM 测试，也不证明 Android 设备行为。
+[合成检查脚本](tools/check-device-acceptance.py)本轮 **41 项通过、0 个 ADB 进程**，使用人工输出及模拟进程验证测试身份、异常停止、用户/包守卫，以及返回前台仅有 `WaitTime` 时保留缺失 `TotalTime`。时间汇总分别记录两种字段，空值不填成 0。这组检查不是上述 32 个 JVM 测试或两个真机测试，也不是性能测量；结果保存在交付报告 `evidence/device-runner-selfcheck.json`。默认计划仍不执行设备命令。
 
-本次收尾只修改验收工具、交付脚本与文档，未修改 Android / protocol 模块和 Gradle 构建输入；复用已经核验的三个 APK，摘要与上一份交付一致，没有把本次打包记作重新构建。
+## 真机验收清单
 
-## 本次设备控制限制
-
-本机构建工具包中的 ARM64 adb 能执行 `version`，不代表已连接 Android。此前对手机授权 shell 的一次只读调用返回 `shizukuStopped`（`started:false`，没有命令执行），恢复设备通道的交接也被停止。之后最近一次读屏返回“无障碍服务未连接”；Android shell 的只读身份/API 探测返回 `cancelled`、`started:false`，没有命令执行。没有改写重试或切换通道重放，本次打包也未重新探测设备。因此尚未安装或启动本版 App，没有取得真实触控、截图、logcat、相机或系统权限结果。交付证据另附 `device-validation.json`，记录这一区别。
-
-## 真机验收清单（待执行）
-
-| 场景 | 期望行为 | 本次状态 |
+| 场景 | 本次实际覆盖 | 剩余范围 |
 |---|---|---|
-| Release 安装、首次启动、系统返回 | 正常进入首页，可与旧版/Debug 共存 | 未执行 |
-| 无账号离线合成示例 | 全部/逐题/答案/解析/原题可读；无作业、无网络题图 | 未执行 |
-| JSON/目录导入与 HTML 导出 | 系统选择器工作；取消可恢复；拒绝过大/非法文件；原文件不变 | 未执行 |
-| 浅色/深色、字体系统缩放、横竖屏 | 无遮挡、按钮可点击，布局可滚动 | 未执行 |
-| 扫码拒绝相机/再次授权/切镜头/相册取消 | 错误清楚，资源释放，可继续手输编号 | 未执行 |
-| 多账号、离线缓存、快速切换与登出 | 数据隔离、过期请求不更新当前界面 | 未执行 |
-| 草稿快速返回、后台、相册 URI | 最后作答正确保存，无法保存有明确提示，持久读取权限有效 | 未执行 |
-| 确认提交、取消、超时/断网 | 确认快照一致；一次请求；未知状态持续锁定 | 仅本地协议分支测试 |
-| 清在线缓存/离线库、逐条删除 | 清除范围准确，确认后执行，不改原文件/草稿/未知锁 | 未执行 |
+| Release 安装/启动/返回 | 现有包摘要核验、保留数据更新、首页未登录/空查询禁用、进程冷启动及任务返回 | 从未安装状态首次安装/首次启动、其他 Android/API/ABI |
+| 无账号离线合成示例 | Release 题干/选项/父子层级截图、只读无作业；先前版本的答案/解析/原题及切题操作；更新和冷启动后仍有一张示例 | 真实/复杂题卡排版、长列表和异常容量 |
+| 系统文件选择器 | 最终 Release 导入选择器打开后取消并回库；导出选择器打开后取消，显示取消消息并返回详情 | 实际文件读写、JSON/目录导入、成功导出、过大/非法文件及提供方异常 |
+| 浅深色/字体/横竖屏 | 当前系统字体缩放 1.0 的基础页面 | 主题切换、大字体、旋转均待执行 |
+| 扫码/权限/相册 | 未执行 | 拒绝/再次授权、切镜头、合成 QR、相册恢复 |
+| 多账号/缓存/登出 | 未使用真实账号 | 数据隔离、过期请求、跨用户行为 |
+| 草稿/后台/URI | 内置离线示例保留至更新和冷启动后 | 在线作答快速返回、进程重建、URI 权限恢复 |
+| 提交确认/断网/UNKNOWN | 仅既有本地协议分支测试 | 设备持久保护与获授权测试作业 |
+| 清理/逐条删除 | 未执行 | 清理范围与确认行为 |
 
-真实学生账号登录、图片上传、不可逆答卷提交需要单独的获授权测试账号与测试作业。本交付没有执行这些操作。
+真实学生登录、取题、图片上传和不可逆答卷提交均未执行，需要单独获授权的测试账号、题卡和作业。没有同条件 Qt 对比，不声称全产品已通过验收。
 
 ## 性能
 
-已执行一次主机 JVM 的合成数据路径测量，详见 [PERFORMANCE.md](PERFORMANCE.md) 与原始 JSON。没有 Android 启动/帧率/内存/功耗测试，没有同条件 Qt 对比，不声称性能提升。
+除既有主机 JVM 合成测量外，本轮对最终 Release 实际采集五次进程冷启动、五次同 PID 返回前台、一次 PSS 和初始页面帧记录。原始值、缺失字段与测量局限见[性能报告](PERFORMANCE.md)及[真机记录](docs/device-results-20261128.md)；未测量滚动性能、功耗、温升、峰值内存或真实上传耗时。

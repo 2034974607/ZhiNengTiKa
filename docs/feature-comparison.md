@@ -6,7 +6,7 @@
 
 当前功能已接入源码，并实际生成最终 Debug、独立签名且经 R8/资源收缩的 Release，以及 Debug instrumentation 测试 APK；三个最终 APK 均通过签名、包名/版本、最低 API 26 / 目标 API 35、ZIP 完整性和对齐检查。最后一轮草稿、权限、主题、备份声明与相册重选提示已编入这些产物。
 
-JVM 合成测试实际执行 **32 项，全部通过**；两个 Compose instrumentation 测试已编译，尚未在设备执行。没有安装、启动、真实界面操作或生产 API 请求，也没有相机/系统权限/真实账号验收。构建与静态检查不能证明所有设备路径或现行服务端协议可用；详见[测试报告](../TESTING.md)及[已知问题](known-issues.md)。
+JVM 合成测试实际执行 **32 项，全部通过**。2026-11-28 在 OPPO PHY120 / Android 17（API 37）/ 用户 0 上实际运行两项 Compose instrumentation 测试；升级 Espresso 兼容依赖后 **2 通过、0 失败、0 跳过**，修复前的两项初始化失败保留为历史证据。Release 已完成启动、离线合成题卡阅读与持久恢复、系统文件选择器取消及基础启动/PSS 采样。相机、系统权限、真实账号与生产 API 未测试；具体边界见[本轮真机记录](device-results-20261128.md)、[测试报告](../TESTING.md)及[已知问题](known-issues.md)。
 
 ## 总体范围
 
@@ -37,7 +37,7 @@ JVM 合成测试实际执行 **32 项，全部通过**；两个 Compose instrume
 | 更新检查 | fork 已修复 GitHub Releases 更新 | 部分类存在但 UI 未注册 | 未实现原生版更新源，不指向旧 Qt APK |
 | 公告 | 无 | QML 公告、未读状态 | 未实现 |
 | 学案资源下载 | 无 | Widgets/QML 分页资源下载 | 未实现；上游随机授权及固定学校编号不能作为有效认证依据 |
-| 安装与共存 | 旧包名和签名 | 旧包名和签名 | Release `app.zhinengtika.nativeapp`，Debug `.debug`；独立 Release 私钥留在工程外。包名支持共存，但本次没有实际安装验证 |
+| 安装与共存 | 旧包名和签名 | 旧包名和签名 | Release `app.zhinengtika.nativeapp`，Debug `.debug`；独立 Release 私钥留在工程外。已在用户 0 核对并启动两个独立安装，与旧 Qt 应用共存尚未实测 |
 
 ZXing 解码器本身是纯 Java，不依赖专有 ML Kit、模型下载或遥测；传递依赖 CameraX / Compose 仍带有 `.so`。最终 APK 的原生库 16 KiB ELF/ZIP 对齐已验证，不能据此推断相机或 16 KiB 设备运行通过。依赖许可及构件来源见[第三方声明](third-party-notices.md)，构建方式见[构建说明](../BUILDING.md)。
 
@@ -49,4 +49,4 @@ ZXing 解码器本身是纯 Java，不依赖专有 ML Kit、模型下载或遥�
 
 ## 验证仍需补齐的部分
 
-最终重建与最终 APK 复核结果应以[测试报告](../TESTING.md)及交付证据为准。两个 instrumentation 测试从未执行；实际安装、后台/旋转恢复、相册 URI 恢复、相机、系统选择器、权限和所有真实 API 路径均未验证。已记录的是主机 JVM 合成数据测量，不能替代 Android 启动、帧率、内存、功耗或 Qt 同条件对比，见[性能报告](../PERFORMANCE.md)。
+最终重建与 APK 复核结果见[测试报告](../TESTING.md)。当前设备覆盖限定为 API 37 用户 0：两项 Debug Compose 测试、Release 合成示例和 SAF 取消，以及五次进程冷启动、五次同进程返回和单次 PSS/初屏帧记录。后台/旋转恢复、相册 URI 恢复、相机、权限、完整 SAF 文件交换和所有真实 API 路径仍待验证。系统返回前台只提供 WaitTime，未提供 TotalTime；没有滚动、功耗、峰值内存或同条件 Qt 对比，见[性能报告](../PERFORMANCE.md)。

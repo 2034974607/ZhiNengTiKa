@@ -45,6 +45,13 @@ def main():
     check("expected component and timing parse", module["launch_summary"](launch)["complete"])
     check("different activity does not pass", not module["launch_summary"](launch.replace("/.MainActivity", "/.OtherActivity"))["complete"])
     check("missing launch timing does not pass", not module["launch_summary"](launch.replace("TotalTime: 12\n", ""))["complete"])
+    task_return = ("Warning: Activity not started, its current task has been brought to the front\n"
+                   "Status: ok\nLaunchState: UNKNOWN (0)\nActivity: " + module["RELEASE"]
+                   + "/.MainActivity\nWaitTime: 39\nComplete\n")
+    returned = module["launch_summary"](task_return, allow_task_return=True)
+    check("task return preserves wait-only timing and full launch state", returned["complete"] and returned["totalTimeMs"] is None and returned["waitTimeMs"] == 39 and returned["launchState"] == "UNKNOWN (0)")
+    check("task return cannot substitute for cold launch", not module["launch_summary"](task_return)["complete"])
+    check("wait-only result needs explicit task-return confirmation", not module["launch_summary"](task_return.replace("Warning: Activity not started, its current task has been brought to the front\n", ""), allow_task_return=True)["complete"])
     check("both memory report formats parse", module["memory_pss"](" TOTAL PSS: 4567 TOTAL RSS: 8900\n") == 4567 and module["memory_pss"](" TOTAL 4567 123 0\n") == 4567)
     check("missing memory is not zero", module["memory_pss"]("No process found\n") is None)
 
@@ -59,6 +66,8 @@ def main():
     check("package query error rejected", not evaluate({"check": "absent"}, "Error: permission denied\n", blank_report()))
     check("changed PID rejected", not evaluate({"check": "pid-continuity"}, "4321\n", {"resumeProcessPid": 1234}))
     check("cold start cannot count as foreground return", not evaluate({"check": "launch", "id": "resume-launch-1"}, launch.replace("HOT", "COLD"), blank_report()))
+    check("cold state with details cannot count as wait-only return", not evaluate({"check": "launch", "id": "resume-launch-1"}, task_return.replace("UNKNOWN (0)", "COLD (1)"), blank_report()))
+    check("foreground total time remains supported", evaluate({"check": "launch", "id": "resume-launch-1"}, launch, blank_report()))
 
     apks = [{"package": package, "path": "/synthetic/" + name, "sha256": "0" * 64} for package, name in module["APKS"]]
     plan = module["build_plan"]("/must-not-run/adb", "synthetic-device", apks, 3)
@@ -86,7 +95,7 @@ def main():
         if kind in {"pid-baseline", "pid-continuity"}:
             return "1234\n"
         if kind == "launch":
-            return launch if step["id"].startswith("resume-") else launch.replace("HOT", "COLD")
+            return task_return if step["id"].startswith("resume-") else launch.replace("HOT", "COLD")
         if kind == "memory":
             return "TOTAL PSS: 4567\n"
         return ""
@@ -106,7 +115,8 @@ def main():
         report = blank_report()
         code = module["execute"](plan, report, sink)
         check("mocked full plan records all commands exactly once", code == 0 and popen.call_count == len(plan))
-        check("mocked timings retain separate sample classes", len(report["coldProcessLaunch"]["samplesMs"]) == 3 and len(report["sameProcessForegroundReturn"]["samplesMs"]) == 3)
+        check("mocked timings retain separate sample classes", len(report["coldProcessLaunch"]["totalTime"]["samplesMs"]) == 3 and len(report["sameProcessForegroundReturn"]["waitTime"]["samplesMs"]) == 3)
+        check("wait-only aggregation never invents total times", report["sameProcessForegroundReturn"]["totalTime"]["samplesMs"] == [] and report["sameProcessForegroundReturn"]["totalTime"]["medianMs"] is None and report["sameProcessForegroundReturn"]["missingTotalTimeSamples"] == 3)
         snapshots = [json.loads(call.args[0]) for call in sink.write.call_args_list]
         check("in-progress snapshot precedes completed record", snapshots[1]["commands"][0]["status"] == "in-progress")
     failure_plan = plan[:2]

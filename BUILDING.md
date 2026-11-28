@@ -12,6 +12,7 @@
 | 官方 SDK build-tools | 34.0.0 |
 | Compose BOM | 2025.04.01 |
 | CameraX / ZXing Java core | 1.4.2 / 3.5.3 |
+| Android UI 测试：Espresso / runner / JUnit 扩展 | 3.7.0 / 1.7.0 / 1.3.0 |
 
 wrapper 的 Gradle 8.9 分发 SHA-256 固定为：
 
@@ -113,11 +114,11 @@ export ZHINENGTIKA_KEY_ALIAS=native-release
 python3 tools/verify-apks.py
 ```
 
-脚本对 Debug、Release、UI 测试 APK 执行官方 `apksigner.jar` 验签、aapt2 metadata / manifest 检查、原生 zipalign 的 16 KiB 检查、ZIP CRC 与 ELF LOAD 对齐检查；输出 SHA-256、公开证书指纹、原生库清单与原始检查输出，不读取业务账号。未安装设备，也不声称完成 UI 验收。
+脚本对 Debug、Release、UI 测试 APK 执行官方 `apksigner.jar` 验签、aapt2 metadata / manifest 检查、原生 zipalign 的 16 KiB 检查、ZIP CRC 与 ELF LOAD 对齐检查；输出 SHA-256、公开证书指纹、原生库清单与原始检查输出，不读取业务账号。此脚本本身不安装或运行应用；本轮独立取得的真机测试、Release UI 与性能证据见[测试报告](TESTING.md)。
 
 ## 设备验收准备
 
-[验收脚本](tools/acceptance-device.py)可对完整交付目录生成命令计划；默认不启动 ADB。先运行[主机合成检查](tools/check-device-acceptance.py)，再参照[设备验收方案](docs/device-acceptance.md)确认测试设备、用户和包状态。`--run` 会安装三个 APK 并操作应用，需要明确选定已授权设备；计划生成和合成检查均不算设备验收。
+[验收脚本](tools/acceptance-device.py)可对完整交付目录生成命令计划；默认不启动 ADB。先运行[主机合成检查](tools/check-device-acceptance.py)，再参照[设备验收方案](docs/device-acceptance.md)确认测试设备、用户和包状态。其 `--run` 仅适用于当前用户为 0、没有其他用户且三个包均不存在的已授权测试设备；不适用于本轮已有安装和 user999 的手机。计划生成和主机合成检查均不算设备验收。
 
 ```sh
 python3 tools/check-device-acceptance.py
@@ -126,7 +127,13 @@ python3 tools/acceptance-device.py \
   --output /path/to/new-plan.json
 ```
 
-本次补充验收工具和报告，复用已经核验且摘要不变的三个 APK；Android 源码和 Gradle 构建输入未改动，没有重新构建 APK。新交付源码提交包含这些验收工具，成功构建日志仍保留原构建时间。
+## 本轮重建与测试依赖修复
+
+2026-11-28 的真机 Android 17 / API 37 暴露了原 Espresso 3.5.0 的 `InputManager.getInstance()` 反射初始化失败。按照官方[修复提交](https://github.com/android/android-test/commit/fddcda4adc8eaba515fbf2d790cf8dfe5c1b722d)，将 `androidTestImplementation` 的 runner 更新到 1.7.0、JUnit 扩展更新到 1.3.0，并显式依赖 Espresso core 3.7.0，更新锁和测试许可记录；未改业务实现、Compose 版本或 Release 运行依赖。compile/target/min SDK 保持 35/35/26。
+
+此轮确实重新运行了完整签名构建，成功日志是 `artifacts/logs/20261128T043932.019568Z.log`：4 分 27 秒，135 项任务中 29 项执行、106 项 `UP-TO-DATE`；协议测试未重跑。三个最终 APK 已重新静态核验，Debug 字节与摘要不变；Release 体积相同，但版本控制元数据变化使摘要改变；新测试 APK 为 1,053,614 字节。不能把本轮写成只补文档并复用所有旧摘要，也不声称位级可重复构建。最终摘要及设备运行对应关系见[真机记录](docs/device-results-20261128.md)。
+
+本轮通过另外明确授权的手机工具/Shizuku shell 在 user0 上保留数据更新 Release 与测试包，Debug 保持原包，随后两个 Compose 测试通过。干净单用户脚本没有执行。shell 环境缺少两个标准 classpath 变量的问题仅在确认无活动测试后、为当前命令从 zygote 导入解决，没有修改系统环境配置；不能将这一设备特定修正当作其他设备的通用安装步骤。
 
 ## 下载来源与固定摘要
 
@@ -148,11 +155,13 @@ python3 tools/collect-dependency-notices.py
 python3 tools/collect-debug-test-notices.py
 # 提交完整源码与文档，确保 Git 工作区干净
 python3 tools/package-delivery.py \
-  --build-log artifacts/logs/实际成功日志.log
+  --build-log artifacts/logs/20261128T043932.019568Z.log
 ```
 
-脚本检查 APK SHA-256 未在验签后改变、32 项协议测试全部通过、Debug/Release Lint 没有错误、依赖清单与许可清单一致；重新执行验收脚本的主机合成检查，并在交付报告中生成默认命令计划，全程不启动 ADB。在手机 Download/DSH-Go 下新建带时间与提交号的目录，拒绝覆盖同名交付。目录包含三个 APK、完整源码 ZIP、独立 Git bundle、报告 ZIP、R8 mapping、公开证书、构建/测试原始证据和 SHA256SUMS。私钥、密码、SDK 和依赖缓存不进入交付。
+脚本检查 APK SHA-256 未在验签后改变、32 项协议测试全部通过、Debug/Release Lint 没有错误、依赖清单与许可清单一致；重新执行验收脚本的主机合成检查，并在交付报告中生成默认命令计划，全程不启动 ADB。本轮还要求 `artifacts/evidence/device-20261128/session-final.json` 与三包最终 SHA 一致，重新解析最终 instrumentation 完整 stdout，核对命令退出码 0、stderr 为空和两个确切方法成功；交付清单的 `deviceTestsExecuted` 据独立设备证据记为 true，并明确 `legacyRunnerExecuted: false`，不从纯静态 APK 报告推导运行结果。
 
-只补充文档或验收工具、复用此前已交付的 APK 时，额外传入 `--apk-source-commit 原交付源码提交`。脚本比较 `app/`、`protocol/`、`gradle/`、根 Gradle 配置、wrapper 和构建入口，任何差异都要求先重新构建；清单记录 APK 输入提交、交付源码提交与复用状态。本次对应的原交付提交为 `0ab8540670f1d53ee90a9574d83dc4af35adfe1c`。默认计划使用占位 serial，只供审查；设备移动或交付目录变化后重新生成，运行记录则采用 JSONL。
+在手机 Download/DSH-Go 下新建带时间与提交号的目录，拒绝覆盖同名交付。目录包含三个 APK、完整源码 ZIP、独立 Git bundle、报告 ZIP、R8 mapping、公开证书、构建/测试原始证据和 SHA256SUMS。私钥、密码、SDK 和依赖缓存不进入交付。
+
+只补充文档或验收工具、复用此前已交付 APK 时，才额外传入 `--apk-source-commit 原交付源码提交`。脚本比较 `app/`、`protocol/`、`gradle/`、根 Gradle 配置、wrapper 和构建入口，任何差异都要求先重新构建；清单记录真实源码提交与构建状态。本轮测试依赖与锁已改变且已重新构建，不能再引用初版提交并声称构建输入未变。默认设备计划使用占位 serial，只供审查；它与独立真机证据分别保存，不将未执行计划记为完成。设备证据随报告放在 `evidence/device-20261128/`，不混入静态 APK 核验报告的执行标记。
 
 可用 `git clone 交付的.git.bundle 新目录` 恢复独立历史；直接解压源码 ZIP 也可构建。复现 Release 时需要维护者妥善保存的同一签名私钥；源码和公开证书不能恢复私钥。交付清单记录源码提交与最终构建日志，设备与真实服务验证仍以[测试报告](TESTING.md)的状态为准。

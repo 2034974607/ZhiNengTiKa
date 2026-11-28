@@ -62,7 +62,8 @@ JUnit 4.13.2 的[官方许可页](https://junit.org/junit4/license.html)明确�
 不是 LGPL 或 JDK 的 GPLv2 with Classpath Exception。它用于 JVM 测试与单独的 instrumentation 测试包，
 不进入 Release 运行时依赖；完整文本以构件随附的 `LICENSE-junit.txt` 为准。
 
-AndroidX test（`androidx.test.ext:junit:1.2.1`、`androidx.test:runner:1.6.2`）按 Apache-2.0
+AndroidX test（`androidx.test.ext:junit:1.3.0`、`androidx.test:runner:1.7.0`）及
+Espresso（`androidx.test.espresso:espresso-core:3.7.0`）按 Apache-2.0
 授权，仅用于 `androidTest`，不随生产包使用。Hamcrest `core` / `library` / `integration` 1.3 是测试传递依赖，采用 BSD 3-Clause；实际缓存 JAR 的版权、条件和免责声明逐字保留在[Debug/测试依赖声明](debug-test-notices.txt)，对应构件和文本摘要见[补充清单](debug-test-artifacts.json)。这份补充按锁文件范围收集缓存构件，不冒充 APK 内打包类的完整清单。
 
 ## 四、ZXing Java core（Apache-2.0）

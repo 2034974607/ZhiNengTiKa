@@ -10,6 +10,7 @@ import datetime
 import hashlib
 import json
 from pathlib import Path
+import runpy
 import shutil
 import subprocess
 import sys
@@ -135,6 +136,22 @@ if __name__ == "__main__":
     for apk in verification["apks"]:
         if not apk["checksPassed"] or sha(ROOT / apk["file"]) != apk["sha256"]:
             raise SystemExit("APK changed after verification; verify it again")
+    device_validation = json.loads((ROOT / "artifacts/evidence/device-20261128/session-final.json").read_text())
+    instrumentation_log = (ROOT / "artifacts/evidence/device-20261128/instrumentation-final-stdout.txt").read_text()
+    instrumentation = runpy.run_path(str(ROOT / "tools/acceptance-device.py"))["instrumentation_summary"](instrumentation_log)
+    current_hashes = {item["package"]: item["sha256"] for item in verification["apks"]}
+    if (not instrumentation["complete"] or instrumentation["passed"] != 2
+            or (ROOT / "artifacts/evidence/device-20261128/instrumentation-final-exit-code.txt").read_text().strip() != "0"
+            or (ROOT / "artifacts/evidence/device-20261128/instrumentation-final-stderr.txt").read_text().strip()
+            or device_validation.get("deviceTestsExecuted") is not True
+            or device_validation.get("apkSha256ByPackage") != current_hashes
+            or device_validation.get("instrumentation", {}).get("testApkSha256") != current_hashes["app.zhinengtika.nativeapp.debug.test"]
+            or device_validation.get("instrumentation", {}).get("debugApkSha256") != current_hashes["app.zhinengtika.nativeapp.debug"]
+            or any(device_validation.get("instrumentation", {}).get(key) != value for key, value in instrumentation.items())
+            or device_validation.get("releasePerformance", {}).get("apkSha256") != current_hashes["app.zhinengtika.nativeapp"]
+            or len(device_validation.get("releasePerformance", {}).get("coldProcessLaunch", {}).get("samples", [])) != 5
+            or len(device_validation.get("releasePerformance", {}).get("sameProcessForegroundReturn", {}).get("samples", [])) != 5):
+        raise SystemExit("Final device evidence does not match the verified APKs and two complete tests")
     tests = unit_summary()
     lint = [lint_summary(variant) for variant in ["debug", "release"]]
     with (ROOT / "app/build/reports/dependency-inventory.tsv").open(newline="") as stream:
@@ -206,16 +223,27 @@ if __name__ == "__main__":
         "deviceAcceptance": {"plan": "reports/evidence/device-acceptance-plan.json",
                              "runnerSelfcheck": "reports/evidence/device-runner-selfcheck.json",
                              "runnerHostChecksPassed": runner_evidence["passedChecks"],
-                             "planExecutesDeviceCommands": False},
+                             "planExecutesDeviceCommands": False,
+                             "legacyRunnerExecuted": False,
+                             "legacyRunnerInapplicableReasons": ["multiple Android users", "preexisting Release/Debug packages"],
+                             "method": "separately authorized phone-tool and user0 Shizuku validation",
+                             "results": "reports/docs/device-results-20261128.md",
+                             "evidence": "reports/evidence/device-20261128/session-final.json",
+                             "testPackageSha256": device_validation["apkSha256ByPackage"]["app.zhinengtika.nativeapp.debug.test"]},
         "apkVerification": "reports/evidence/apk-verification.json",
-        "deviceTestsExecuted": verification.get("deviceTestsExecuted", False),
+        "deviceTestsExecuted": instrumentation["started"] > 0,
+        "instrumentation": instrumentation,
+        "deviceValidation": "reports/evidence/device-validation.json",
         "realServiceTestsExecuted": False,
-        "limitations": ["No real student accounts, uploads or answer submissions were used.",
+        "limitations": ["Two Debug Compose tests and limited Release smoke/performance checks passed on Android API37 user0; this is not complete device coverage.",
+                        "The device also has user999, which was not tested; clean fresh-install validation remains separate.",
+                        "Foreground task returns only reported WaitTime; no TotalTime, fully-drawn, scrolling, peak-memory, power or Qt comparison is claimed.",
+                        "No real student accounts, uploads or answer submissions were used.",
                         "Navigation custom lint registries are incompatible with this lint API; skipped checks are reported.",
-                        "Synthetic host-JVM benchmark is not Android UI performance or a comparison with Qt."],
+                        "Synthetic host-JVM benchmark is distinct from the separately recorded Android samples."],
     }
     (delivery / "delivery-manifest.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n")
-    readme = f"""# 新教育智能题卡 原生版 1.0.0 交付\n\n源码提交：`{commit}`（独立新历史，无远端推送）。\n\n- [Release APK]({names[1]})：日常安装入口，独立签名，启用 R8。\n- [Debug APK]({names[0]})：开发与 UI 测试使用，与 Release 分包。\n- [UI 测试 APK]({names[2]})：配合 Debug 安装，不是单独的应用。\n- [完整源码 ZIP]({source_zip.name})：包含 Gradle wrapper、构建脚本、测试与许可。\n- [独立 Git bundle]({bundle.name})：可用 `git clone 文件路径 新目录` 恢复新历史。\n- [构建与签名](reports/BUILDING.md)、[测试](reports/TESTING.md)、[性能](reports/PERFORMANCE.md)。\n- [功能对照](reports/docs/feature-comparison.md)、[协议](reports/docs/protocol.md)、[已知问题](reports/docs/known-issues.md)。\n- [设备验收方案](reports/docs/device-acceptance.md)、[默认命令计划](reports/evidence/device-acceptance-plan.json)、[验收脚本合成检查](reports/evidence/device-runner-selfcheck.json)。\n- [交付清单](delivery-manifest.json)、[APK 签名与对齐证据](reports/evidence/apk-verification.json)。\n\nJVM 合成测试 {tests['tests']} 项通过；Debug / Release Lint 无错误，保留全部警告。\n验收脚本主机合成检查 {runner_evidence['passedChecks']} 项通过，未启动 ADB；附带的计划未执行设备命令。\nAPK 构建输入对应源码提交 `{apk_source_commit}`，已与本交付的 Android / protocol 模块、Gradle 输入及构建入口逐项比较一致；新交付包含补充验收工具与文档，不把重新打包算作新的 APK 构建。\n真实账号与服务端互操作未测试；设备运行状态以测试报告为准。未包含签名私钥或密码。\n将所有文件留在同一目录可保持上述相对链接。报告压缩包内也包含同一套文档与证据。\n"""
+    readme = f"""# 新教育智能题卡 原生版 1.0.0 交付\n\n源码提交：`{commit}`（独立新历史，无远端推送）。\n\n- [Release APK]({names[1]})：日常安装入口，独立签名，启用 R8。\n- [Debug APK]({names[0]})：开发与 UI 测试使用，与 Release 分包。\n- [UI 测试 APK]({names[2]})：配合 Debug 安装，不是单独的应用。\n- [完整源码 ZIP]({source_zip.name})：包含 Gradle wrapper、构建脚本、测试与许可。\n- [独立 Git bundle]({bundle.name})：可用 `git clone 文件路径 新目录` 恢复新历史。\n- [构建与签名](reports/BUILDING.md)、[测试](reports/TESTING.md)、[性能](reports/PERFORMANCE.md)。\n- [功能对照](reports/docs/feature-comparison.md)、[协议](reports/docs/protocol.md)、[已知问题](reports/docs/known-issues.md)。\n- [本轮真机结果](reports/docs/device-results-20261128.md)、[设备验收方案](reports/docs/device-acceptance.md)、[默认命令计划](reports/evidence/device-acceptance-plan.json)、[验收脚本合成检查](reports/evidence/device-runner-selfcheck.json)。\n- [交付清单](delivery-manifest.json)、[APK 签名与对齐证据](reports/evidence/apk-verification.json)。\n\nJVM 合成测试 {tests['tests']} 项通过；Debug / Release Lint 无错误，保留全部警告。\n验收脚本主机合成检查 {runner_evidence['passedChecks']} 项通过，未启动 ADB；附带的计划未执行设备命令。\nAPK 构建输入对应源码提交 `{apk_source_commit}`，与本交付的 Android / protocol 模块、Gradle 输入及构建入口一致。成功构建日志保留实际时间；本轮修复 Espresso 测试兼容性，重新执行三个 APK 的构建与静态核验，Debug 摘要保持不变。\nOPPO PHY120 / Android 17（API 37）/ 用户 0 上，两项 Debug Compose 测试实际通过；Release 完成离线阅读、持久恢复、SAF 取消和五次进程冷启动/五次同进程返回的有限验证。其他用户、相机、完整文件交换和线上业务仍未覆盖；返回前台的 WaitTime 不作为渲染耗时。\n真实账号与服务端互操作未测试；设备运行状态以测试报告为准。未包含签名私钥或密码。\n将所有文件留在同一目录可保持上述相对链接。报告压缩包内也包含同一套文档与证据。\n"""
     (delivery / "交付说明.md").write_text(readme)
     zip_tree(reports, delivery / "ZhiNengTiKa-native-1.0.0-reports.zip")
     all_files = sorted(file for file in delivery.rglob("*") if file.is_file())

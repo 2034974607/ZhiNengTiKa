@@ -84,18 +84,26 @@ def instrumentation_summary(text):
             "unknownStatusCodes": unknown, "identityErrors": identity_errors, "complete": complete}
 
 
-def launch_summary(text):
+def launch_summary(text, allow_task_return=False):
     status = re.search(r"^Status:\s*(\S+)\s*$", text, re.MULTILINE)
     total = re.search(r"^TotalTime:\s*(\d+)\s*$", text, re.MULTILINE)
     wait = re.search(r"^WaitTime:\s*(\d+)\s*$", text, re.MULTILINE)
-    state = re.search(r"^LaunchState:\s*(\S+)\s*$", text, re.MULTILINE)
+    state = re.search(r"^LaunchState:[ \t]*([^\r\n]+)", text, re.MULTILINE)
     activity = re.search(r"^Activity:\s*(\S+)\s*$", text, re.MULTILINE)
     actual = activity[1] if activity else None
     expected_activity = actual in {COMPONENT, RELEASE + "/.MainActivity"}
-    return {"complete": bool(status and status[1] == "ok" and total and expected_activity),
+    task_return = "Warning: Activity not started, its current task has been brought to the front" in text
+    timing_available = total or allow_task_return and task_return and wait
+    return {"complete": bool(status and status[1] == "ok" and timing_available and expected_activity),
             "totalTimeMs": int(total[1]) if total else None,
             "waitTimeMs": int(wait[1]) if wait else None,
-            "launchState": state[1] if state else None, "activity": actual}
+            "launchState": state[1].strip() if state else None, "activity": actual,
+            "taskBroughtToFront": task_return}
+
+
+def timing_summary(values):
+    return {"samplesMs": values, "medianMs": statistics.median(values) if values else None,
+            "minMs": min(values) if values else None, "maxMs": max(values) if values else None}
 
 
 def memory_pss(text):
@@ -207,9 +215,11 @@ def evaluate(step, output, report):
         report["deviceTestsExecuted"] = report["instrumentation"]["started"] > 0
         return report["instrumentation"]["complete"]
     if check == "launch":
-        result = launch_summary(output)
-        if (step["id"].startswith("resume-") and result["launchState"] == "COLD"
-                or step["id"].startswith("cold-") and result["launchState"] not in {None, "COLD"}):
+        is_return = step["id"].startswith("resume-")
+        result = launch_summary(output, allow_task_return=is_return)
+        state_name = result["launchState"].split()[0] if result["launchState"] else None
+        if (is_return and state_name == "COLD"
+                or step["id"].startswith("cold-") and state_name not in {None, "COLD"}):
             result["complete"] = False
         report["launches"].append({"id": step["id"], **result})
         return result["complete"]
@@ -276,8 +286,11 @@ def execute(plan, report, sink):
     report["status"] = "scripted-checks-complete"
     report["finishedAtUtc"] = now()
     for prefix, key in [("cold-launch-", "coldProcessLaunch"), ("resume-launch-", "sameProcessForegroundReturn")]:
-        values = [item["totalTimeMs"] for item in report["launches"] if item["id"].startswith(prefix) and item["complete"]]
-        report[key] = {"samplesMs": values, "medianMs": statistics.median(values), "minMs": min(values), "maxMs": max(values)}
+        launches = [item for item in report["launches"] if item["id"].startswith(prefix) and item["complete"]]
+        total = [item["totalTimeMs"] for item in launches if item["totalTimeMs"] is not None]
+        wait = [item["waitTimeMs"] for item in launches if item["waitTimeMs"] is not None]
+        report[key] = {"observedSamples": len(launches), "totalTime": timing_summary(total),
+                       "waitTime": timing_summary(wait), "missingTotalTimeSamples": len(launches) - len(total)}
     save()
     return 0
 

@@ -4,7 +4,7 @@
 
 最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.0` / `10000`。包名设计支持与旧版共存，数据分别保存。
 
-已生成并静态核验 Debug、独立签名 Release 和测试 APK；32 项 JVM 合成测试通过，Debug / Release Lint 均为 0 错误、4 警告。尚未安装或启动本版 App，两个已编译的 Compose 测试、设备权限与真实服务端路径未执行，详见[测试与验收](TESTING.md)。
+已生成并静态核验 Debug、独立签名 Release 和测试 APK；32 项 JVM 合成测试实际通过，末次构建沿用该结果。2026-11-28 在 OPPO PHY120 / Android 17（API 37）的 user0 上，修复测试依赖后的两个 Compose instrumentation 测试实际通过；Release 的离线合成题卡、系统文件选择器取消返回及基础启动/PSS 已做受限验收。Debug / Release Lint 均为 0 错误、4 警告、3 提示。真实账号、相机、完整文件导入导出和复杂生命周期仍待验证，详见[测试与验收](TESTING.md)与[本次真机记录](docs/device-results-20261128.md)。
 
 ## 使用
 
@@ -21,7 +21,7 @@
 - [app](app/build.gradle.kts)：Compose 界面、CameraX、Android Keystore AES-GCM、本地存储与 SAF 导入导出。
 - [protocol](protocol/build.gradle.kts)：纯 Kotlin/JVM 模型、AES/摘要、HTTP 协议、受限解析、离线格式与 HTML 导出；合成测试不连接业务服务。
 - [构建脚本](tools/build-android.py)、[APK 核验](tools/verify-apks.py)与[交付打包](tools/package-delivery.py)：保留实际构建与产物证据。
-- [设备验收方案](docs/device-acceptance.md)与[验收脚本](tools/acceptance-device.py)：默认只生成可审查的命令计划；显式选择已授权测试设备后才安装、运行两个 UI 测试及基础启动/PSS 采样。脚本的[主机合成检查](tools/check-device-acceptance.py)独立于设备测试。
+- [设备验收方案](docs/device-acceptance.md)与[验收脚本](tools/acceptance-device.py)：脚本默认只生成计划，实际执行只接受干净单用户测试设备。本次多用户手机通过另行授权、明确限定 user0 的手机工具验收，未执行该脚本；结果见[真机记录](docs/device-results-20261128.md)。脚本的[主机合成检查](tools/check-device-acceptance.py)独立于设备测试。
 - [结构与数据流](docs/architecture.md)、[业务对照](docs/feature-comparison.md)、[协议](docs/protocol.md)、[迁移](docs/migration.md)、[隐私](docs/privacy.md)、[第三方许可](docs/third-party-notices.md)与[已知问题](docs/known-issues.md)。
 
 常规 Android 开发机先准备 JDK 17、官方 platform 35 与 build-tools 34.0.0，再运行：
@@ -30,7 +30,7 @@
 ./gradlew :protocol:test :app:assembleDebug :app:lintDebug
 ```
 
-完整构建、ARM64 proot 的工具架构限制、SDK 许可、Release 签名和离线依赖说明见 [BUILDING.md](BUILDING.md)。测试证据和真机验证范围见 [TESTING.md](TESTING.md)，合成数据路径测量见 [PERFORMANCE.md](PERFORMANCE.md)。
+完整构建、ARM64 proot 的工具架构限制、SDK 许可、Release 签名和离线依赖说明见 [BUILDING.md](BUILDING.md)。测试证据和真机验证范围见 [TESTING.md](TESTING.md)，主机合成测量与受限 Android 采样见 [PERFORMANCE.md](PERFORMANCE.md)。
 
 ## 差异与限制
 

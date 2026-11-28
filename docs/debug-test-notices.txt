@@ -1151,73 +1151,66 @@ POM license: The Apache Software License, Version 2.0 http://www.apache.org/lice
 No cached matching JAR/AAR; metadata/variant coordinate only in this supplement.
 
 ========================================================================
-androidx.test.espresso:espresso-core:3.5.0
+androidx.test.espresso:espresso-core:3.7.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: espresso-core-3.5.0.aar
-SHA-256: 34b0493f4e002f205d961e562add0c0c31bb0acc657e89d89d4b188ac13f242c
+Artifact: espresso-core-3.7.0.aar
+SHA-256: 5dd90e366838bf044cb52eae06474debd285df18a7a77c40441ac8e8951bb00f
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test.espresso:espresso-idling-resource:3.5.0
+androidx.test.espresso:espresso-idling-resource:3.7.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: espresso-idling-resource-3.5.0.aar
-SHA-256: 84fb8e2f5eda937771bee28582f5d2cfa61b0e9438d02041ca61b81e3dac3c87
+Artifact: espresso-idling-resource-3.7.0.aar
+SHA-256: 5ff62326b49c308c1d060466ae3cf4aa0e3deaf9295f077a6886048dda3e9b14
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test.ext:junit:1.2.1
+androidx.test.ext:junit:1.3.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: junit-1.2.1.aar
-SHA-256: 7b146a73c545b983430d2fae0081df67c76722c19a9abd2904e131696a8c5b20
+Artifact: junit-1.3.0.aar
+SHA-256: 3363df84da4540ba8daff02c3f7cd65471037a6a5370591a7e6deba377b36e7f
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test.services:storage:1.5.0
+androidx.test.services:storage:1.6.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: storage-1.5.0.aar
-SHA-256: d59621845cff5ff5e8a6906445ef1b2d83624d796cbfad9a52e86a3ab42f8c48
+Artifact: storage-1.6.0.aar
+SHA-256: f97e3cf6aaf4e3fb97ef219d37a9c0a0720183c1f6db87b37642521e26fb6d30
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test:annotation:1.0.1
+androidx.test:core:1.7.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: annotation-1.0.1.aar
-SHA-256: c0754928effe1968c3a9a7b55d1dfc7ceb1e1e7c9f3f09f98afd42431f712492
+Artifact: core-1.7.0.aar
+SHA-256: f4dacd8edceeec48e0c76ecf28339b28f4b4f6b74f8e34e9e59b472c27d9eb81
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test:core:1.6.1
+androidx.test:monitor:1.8.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: core-1.6.1.aar
-SHA-256: 7a7af31c21785ddb7c4319c838847e6d4d9b5bb531f3a951481ec3b98780bf51
+Artifact: monitor-1.8.0.aar
+SHA-256: 56cb7496a06d9f2dca7d3ff76c50a8a30bd18e00a24a3b267d5a31437b278e67
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test:monitor:1.7.2
+androidx.test:runner:1.7.0
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: monitor-1.7.2.aar
-SHA-256: 868cc120d10d024b886fa157e1e1eaee0e6a8e5d55e7f765ef41d8fc0fea775b
+Artifact: runner-1.7.0.aar
+SHA-256: 970311c47119928a2e406a88892a3d270387cc5a49a181a1c44511105b41b818
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-androidx.test:runner:1.6.2
+com.google.code.findbugs:jsr305:3.0.2
 POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: runner-1.6.2.aar
-SHA-256: d8eac6d9864f432b15962b2c2739a7b31685c87777364ac97323c9e4b2c94744
+Artifact: jsr305-3.0.2.jar
+SHA-256: 766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
-com.google.code.findbugs:jsr305:2.0.2
-POM license: The Apache Software License, Version 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: jsr305-2.0.2.jar
-SHA-256: 1e7f53fa5b8b5c807e986ba335665da03f18d660802d8bf061823089d1bee468
-No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
-
-========================================================================
-com.squareup:javawriter:2.1.1
+com.google.errorprone:error_prone_annotations:2.30.0
 POM license: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt
-Artifact: javawriter-2.1.1.jar
-SHA-256: f699823d0081f69cbb676c1845ea222e0ada79bc88a53e5d22d8bd02d328f57e
+Artifact: error_prone_annotations-2.30.0.jar
+SHA-256: 144f3aefbd6e27daec55d3753b2c6b13c1afdaf0cf04816cdb564588ed92f1bd
 No bundled LICENSE/NOTICE/COPYING text found; consult POM and upstream source.
 
 ========================================================================
@@ -1453,41 +1446,6 @@ in any resulting litigation.
 org.hamcrest:hamcrest-core:1.3
 Artifact: hamcrest-core-1.3.jar
 SHA-256: 66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9
-
---- LICENSE.txt ---
-BSD License
-
-Copyright (c) 2000-2006, www.hamcrest.org
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this list of
-conditions and the following disclaimer. Redistributions in binary form must reproduce
-the above copyright notice, this list of conditions and the following disclaimer in
-the documentation and/or other materials provided with the distribution.
-
-Neither the name of Hamcrest nor the names of its contributors may be used to endorse
-or promote products derived from this software without specific prior written
-permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-
-
-========================================================================
-org.hamcrest:hamcrest-integration:1.3
-Artifact: hamcrest-integration-1.3.jar
-SHA-256: 70f418efbb506c5155da5f9a5a33262ea08a9e4d7fea186aa9015c41a7224ac2
 
 --- LICENSE.txt ---
 BSD License
