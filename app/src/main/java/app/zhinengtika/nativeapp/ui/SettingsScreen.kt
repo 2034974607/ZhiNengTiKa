@@ -1,47 +1,77 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 
 package app.zhinengtika.nativeapp.ui
 
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.zhinengtika.nativeapp.BuildConfig
+import app.zhinengtika.nativeapp.R
 import app.zhinengtika.nativeapp.data.UiPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -71,93 +101,160 @@ fun SettingsScreen(
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text("设置") })
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
+                .align(Alignment.TopCenter)
+                .widthIn(max = 640.dp)
                 .fillMaxWidth()
-                .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 20.dp)
+                .padding(top = 28.dp, bottom = 32.dp),
         ) {
-            Text("版本 ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "设置",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 4.dp).semantics { heading() },
+            )
+            Text(
+                "按你的习惯使用",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 24.dp),
+            )
 
-            Text("外观", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                UiPreferences.ThemeMode.values().forEach { mode ->
-                    FilterChip(
-                        selected = themeMode == mode,
-                        onClick = { onThemeModeChange(mode) },
-                        label = {
-                            Text(
-                                when (mode) {
-                                    UiPreferences.ThemeMode.SYSTEM -> "跟随系统"
-                                    UiPreferences.ThemeMode.LIGHT -> "浅色"
-                                    UiPreferences.ThemeMode.DARK -> "深色"
-                                },
-                            )
-                        },
-                    )
+            SettingsGroup {
+                SettingsRow(
+                    icon = Icons.Outlined.Shield,
+                    title = "隐私与数据",
+                    description = "离线导入与搜索在本机完成，账号与题卡数据加密保存",
+                    onClick = { section = Section.PRIVACY },
+                )
+            }
+
+            SettingsHeading("应用")
+            SettingsGroup {
+                SettingsRow(
+                    icon = Icons.Outlined.Info,
+                    title = "应用版本",
+                    description = BuildConfig.VERSION_NAME,
+                )
+                SettingsRow(
+                    icon = Icons.Outlined.Code,
+                    title = "关于智能题卡",
+                    description = "使用说明与应用介绍",
+                    onClick = { section = Section.ABOUT },
+                )
+                SettingsRow(
+                    icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                    title = "常见问题",
+                    description = "离线使用、扫码与作业提交",
+                    onClick = { section = Section.FAQ },
+                )
+                SettingsRow(
+                    icon = Icons.Outlined.Description,
+                    title = "开源说明",
+                    description = "开源许可与第三方组件",
+                    onClick = { section = Section.OPEN_SOURCE },
+                )
+            }
+
+            SettingsHeading("贡献人员")
+            SettingsGroup {
+                Spacer(Modifier.height(4.dp))
+                ContributorRow(
+                    name = "LFWQSP2641",
+                    contribution = "上游仓库作者",
+                    githubUsername = "LFWQSP2641",
+                    avatar = R.drawable.avatar_lfwqsp2641,
+                )
+                ContributorRow(
+                    name = "2034974607",
+                    contribution = "项目贡献",
+                    githubUsername = "2034974607",
+                    avatar = R.drawable.avatar_2034974607,
+                )
+                ContributorRow(
+                    name = "OpenAI",
+                    contribution = "GPT-6.1-Sol · AI 辅助开发",
+                    githubUsername = "openai",
+                    avatar = R.drawable.avatar_openai,
+                )
+                Text(
+                    "点击条目，在外部浏览器或应用中打开 GitHub 主页",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 20.dp),
+                )
+            }
+
+            SettingsHeading("项目仓库")
+            SettingsGroup {
+                RepositoryRow("GitHub 仓库", "2034974607/ZhiNengTiKa")
+                RepositoryRow("上游仓库", "LFWQSP2641/ZhiNengTiKa")
+            }
+
+            SettingsHeading("外观")
+            SettingsGroup {
+                SettingsRow(
+                    icon = Icons.Outlined.Palette,
+                    title = "主题模式",
+                    description = "选择适合你的外观",
+                )
+                FlowRow(
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    UiPreferences.ThemeMode.values().forEach { mode ->
+                        FilterChip(
+                            selected = themeMode == mode,
+                            onClick = { onThemeModeChange(mode) },
+                            label = {
+                                Text(
+                                    when (mode) {
+                                        UiPreferences.ThemeMode.SYSTEM -> "跟随系统"
+                                        UiPreferences.ThemeMode.LIGHT -> "浅色"
+                                        UiPreferences.ThemeMode.DARK -> "深色"
+                                    },
+                                )
+                            },
+                        )
+                    }
                 }
             }
 
-            Text("隐私与数据", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Text("扫码、导入、搜索和 HTML 导出都在本机完成。账号会话、题卡副本、浏览历史、草稿、离线资料库和提交状态使用 Android Keystore 加密存储；密码不会保存。")
-            Text("清除范围说明：", style = MaterialTheme.typography.bodyMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
-            Text("· “清除在线缓存与历史” 只删除线上题卡的加密缓存和最近访问记录；不会退出账号、不会删除已提交作业，也不会清除草稿或提交状态标记。")
-            Text("· “清除离线资料库” 只删除 SAF 导入/演示的离线题卡与目录记录。")
-            Text("· 手动解锁提交只清除本机的“结果未知”标记，不会改变服务端状态。")
-            Button(onClick = { confirmClear = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("清除在线缓存与历史")
+            SettingsHeading("数据管理")
+            SettingsGroup {
+                SettingsRow(
+                    icon = Icons.Outlined.Storage,
+                    title = "清除范围说明",
+                    description = "了解缓存、离线资料与提交标记的区别",
+                    onClick = { section = Section.DATA },
+                )
+                SettingsRow(
+                    icon = Icons.Outlined.DeleteOutline,
+                    title = "清除在线缓存与历史",
+                    description = "删除线上题卡缓存和最近访问记录",
+                    onClick = { confirmClear = true },
+                    tint = MaterialTheme.colorScheme.error,
+                )
+                SettingsRow(
+                    icon = Icons.Outlined.DeleteOutline,
+                    title = "清除离线资料库",
+                    description = "删除已导入的离线题卡与目录",
+                    onClick = { confirmClearLibrary = true },
+                    tint = MaterialTheme.colorScheme.error,
+                )
             }
-            Button(onClick = { confirmClearLibrary = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("清除离线资料库")
-            }
-
-            Text("说明", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            InfoButton("常见问题", Section.FAQ) { section = it }
-            InfoButton("关于", Section.ABOUT) { section = it }
-            InfoButton("隐私说明", Section.PRIVACY) { section = it }
-            InfoButton("开源说明", Section.OPEN_SOURCE) { section = it }
-
-            Text("项目仓库", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("本项目", style = MaterialTheme.typography.titleMedium)
-                    GitHubLink("github.com/2034974607/ZhiNengTiKa", "2034974607/ZhiNengTiKa")
-                    Text("上游仓库", style = MaterialTheme.typography.titleMedium)
-                    GitHubLink("github.com/LFWQSP2641/ZhiNengTiKa", "LFWQSP2641/ZhiNengTiKa")
-                }
-            }
-
-            Text("贡献人员", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            ContributorCard(
-                name = "LFWQSP2641",
-                contribution = "上游仓库作者",
-                githubUsername = "LFWQSP2641",
-            )
-            ContributorCard(
-                name = "2034974607",
-                contribution = "项目贡献",
-                githubUsername = "2034974607",
-            )
-            ContributorCard(
-                name = "OpenAI",
-                contribution = "GPT-6.1-Sol · AI 辅助开发",
-                githubUsername = "openai",
-            )
 
             Text(
-                "本应用为独立原生重写版本，采用 Kotlin / Jetpack Compose / Material 3，不含 WebView。安装包不包含旧版题卡数据或个人记录。",
+                "本机处理 · 无广告 · 原生 Android",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 4.dp),
             )
-            Spacer(Modifier.height(12.dp))
         }
     }
 
@@ -222,52 +319,165 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun InfoButton(label: String, section: Section, onSelect: (Section) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = { onSelect(section) }, modifier = Modifier.fillMaxWidth()) {
-            Text(label, modifier = Modifier.fillMaxWidth())
+private fun SettingsHeading(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 28.dp, bottom = 12.dp).semantics { heading() },
+    )
+}
+
+@Composable
+private fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f)
+            .compositeOver(MaterialTheme.colorScheme.background),
+    ) {
+        Column(content = content)
+    }
+}
+
+@Composable
+private fun SettingsRow(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    onClick: (() -> Unit)? = null,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
+            .then(if (onClick == null) Modifier else Modifier.clickable(role = Role.Button, onClick = onClick))
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = tint.copy(alpha = 0.78f), modifier = Modifier.size(24.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = tint)
+            Text(
+                description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (onClick != null) {
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp),
+            )
         }
     }
 }
 
 @Composable
-private fun ContributorCard(name: String, contribution: String, githubUsername: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(name, style = MaterialTheme.typography.titleMedium)
+private fun ContributorRow(
+    name: String,
+    contribution: String,
+    githubUsername: String,
+    @DrawableRes avatar: Int,
+) {
+    val openGitHub = rememberGitHubOpener(githubUsername)
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clickable(role = Role.Button, onClickLabel = "打开 $name 的 GitHub 主页", onClick = openGitHub)
+            .padding(horizontal = 20.dp, vertical = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        Image(
+            painter = painterResource(avatar),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.size(56.dp).clip(CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text(
                 contribution,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            GitHubLink("GitHub · @$githubUsername", githubUsername)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "GitHub · @$githubUsername",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp),
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun GitHubLink(label: String, path: String) {
+private fun RepositoryRow(title: String, path: String) {
+    val openGitHub = rememberGitHubOpener(path)
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 88.dp)
+            .clickable(role = Role.Button, onClickLabel = "打开 $path 仓库", onClick = openGitHub)
+            .padding(horizontal = 20.dp, vertical = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_github),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp),
+        )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "github.com/$path",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Icon(
+            Icons.AutoMirrored.Outlined.OpenInNew,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+@Composable
+private fun rememberGitHubOpener(path: String): () -> Unit {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
-    TextButton(
-        onClick = {
+    return remember(context, uriHandler, path) {
+        {
             runCatching { uriHandler.openUri("https://github.com/$path") }
                 .onFailure {
                     Toast.makeText(context, "无法打开 GitHub 链接，请检查是否安装浏览器。", Toast.LENGTH_LONG).show()
                 }
-        },
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(label, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(8.dp))
-        Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null)
+            Unit
+        }
     }
 }
 
 private enum class Section(val title: String, val body: String) {
+    DATA(
+        "清除范围说明",
+        "扫码、导入、搜索和 HTML 导出都在本机完成。账号会话、题卡副本、浏览历史、草稿、离线资料库和提交状态使用 Android Keystore 加密存储；密码不会保存。\n\n" +
+            "· “清除在线缓存与历史” 只删除所有账号线上题卡的加密缓存和最近访问记录；不会退出账号、不会删除已提交作业，也不会清除草稿或提交状态标记。\n\n" +
+            "· “清除离线资料库” 只删除 SAF 导入/演示的离线题卡与目录记录。\n\n" +
+            "· 手动解锁提交只清除本机的“结果未知”标记，不会改变服务端状态。",
+    ),
     FAQ(
         "常见问题",
         "1. 离线资料库需要登录吗？不需要。导入、搜索和导出都在本机完成。\n" +
@@ -279,7 +489,7 @@ private enum class Section(val title: String, val body: String) {
     ABOUT(
         "关于",
         "新教育智能题卡（原生重写版）${BuildConfig.VERSION_NAME}。\n" +
-            "这是独立实现的原生 Android 应用，使用 Kotlin、Jetpack Compose、Material 3。它与旧版应用使用不同的应用标识与签名身份，不会自动读取旧版应用的私有数据。",
+            "这是独立实现的原生 Android 应用，使用 Kotlin、Jetpack Compose、Material 3，不含 WebView。它与旧版应用使用不同的应用标识与签名身份，不会自动读取旧版应用的私有数据。安装包不包含旧版题卡数据或个人记录。",
     ),
     PRIVACY(
         "隐私说明",

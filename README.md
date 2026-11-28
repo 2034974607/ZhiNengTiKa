@@ -2,7 +2,9 @@
 
 独立 Kotlin / Jetpack Compose / Material 3 客户端。新工程不依赖 Qt、C++、QML 或 WebView；使用新的应用标识、独立签名和全新 Git 历史。旧仓库仅用来审计业务与协议，未合并其历史。
 
-最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.2` / `10002`。Release 沿用 1.0.0 签名，可保留数据覆盖升级；旧版最多 100 张的本机离线库会自动迁移。包名设计支持与旧 Qt 版共存，数据分别保存。
+最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.3` / `10003`。Release 沿用 1.0.0 签名，可保留数据覆盖升级；旧版最多 100 张的本机离线库会自动迁移。包名设计支持与旧 Qt 版共存，数据分别保存。
+
+1.0.3 参考原生设置列表重排页面：大标题与副标题、浅色圆角分组、统一图标与留白。三位贡献人员在同一分组中直接展示圆形头像、身份说明和 GitHub 主页入口，不使用贡献人员弹窗；头像内置，断网可见，来源与摘要见[头像资源记录](docs/contributor-avatars.json)。项目与上游仓库保持独立整行入口；深浅主题、FAQ/隐私/许可全文和清除数据确认保留，详细清除范围收进说明入口。
 
 1.0.2 在设置页新增“项目仓库”和“贡献人员”：可打开[项目仓库](https://github.com/2034974607/ZhiNengTiKa)与[上游仓库](https://github.com/LFWQSP2641/ZhiNengTiKa)，并展示上游仓库作者 LFWQSP2641、项目贡献者 2034974607，以及 OpenAI（GPT-6.1-Sol · AI 辅助开发），各自附可打开的 GitHub 主页链接。
 

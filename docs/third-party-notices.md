@@ -121,5 +121,11 @@ JUnit 4.13.2 的 `LICENSE-junit.txt` 已从实际缓存构件提取为 `assets/l
 许可文本 SHA-256 为 `9648bb2891b9813970bddb68d4be8a5e6ec8280d0180a53dfb29236b579c55bb`。
 JUnit 只用于测试；Release 的实际解析清单与 Debug/测试的锁文件补充范围分开记录。补充声明由 `tools/collect-debug-test-notices.py` 生成，不改变应用内 Release 许可资产或已验签 APK。
 
+## 八、设置页头像与图标
+
+1.0.3 设置页内置 LFWQSP2641、2034974607 与 OpenAI 的公开 GitHub 头像，显示时无需联网。原图来源、获取时间及 SHA-256 见[头像资源记录](contributor-avatars.json)；头像与标识权利归各自权利人所有，不适用项目代码的 AGPL 许可，也不表示背书。
+
+仓库入口使用 Primer Octicons 的 [GitHub mark](https://github.com/primer/octicons/blob/main/icons/mark-github-16.svg)，转换为 Android VectorDrawable；其 MIT 原始版权和许可全文附于应用内 `assets/legal/Contributor-assets.txt`，可从“设置 → 开源说明”查看。
+
 完整对应源码与 APK 一同交付；未向公网发布，也未提供任何外部业务服务。APK 自身没有 GitHub 上传、
 遥测或广告 SDK。源码中的业务兼容密钥不构成安全边界，不在本文件披露。
