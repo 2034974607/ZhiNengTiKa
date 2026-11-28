@@ -1,69 +1,49 @@
-# ZhiNengTiKa / xinjiaoyu
+# 新教育智能题卡 · 原生 Android 重写
 
-原项目作者：LFWQSP2641。本 fork 保留项目原有代码和版权声明，并补充 Android APK 构建及发布配置。项目许可证见 [LICENSE](LICENSE)。
+独立 Kotlin / Jetpack Compose / Material 3 客户端，不依赖 Qt、C++、QML 或 WebView；使用新的应用标识和独立签名。原生工程先以独立历史完成开发，现发布回原仓库的 `master`，以原生源码替换默认目录，并保留旧 Qt 与原生工程两段提交历史。旧版源码和安装包仍可从 [Qt v1.8.1](https://github.com/2034974607/ZhiNengTiKa/releases/tag/v1.8.1) 查看。
 
-## Android 构建
+最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.0` / `10000`。包名设计支持与旧版共存，数据分别保存。
 
-构建目标为 `arm64-v8a`，当前修复版为 `1.8.1`（Android versionCode `10801`）。工程使用 Qt 6.4.3、Android SDK / Build Tools 31、NDK r23b（23.1.7779620）和 JDK 17。Qt 需安装 Android arm64-v8a、相同版本的桌面主机工具以及 `qtwebview`、`qtshadertools` 模块。
+已生成并静态核验 Debug、独立签名 Release 和测试 APK；32 项 JVM 合成测试实际通过，末次构建沿用该结果。2026-11-28 在 OPPO PHY120 / Android 17（API 37）的 user0 上，修复测试依赖后的两个 Compose instrumentation 测试实际通过；Release 的离线合成题卡、系统文件选择器取消返回及基础启动/PSS 已做受限验收。Debug / Release Lint 均为 0 错误、4 警告、3 提示。真实账号、相机、完整文件导入导出和复杂生命周期仍待验证，详见[测试与验收](TESTING.md)与[本次真机记录](docs/device-results-20261128.md)。
 
-原工程引用的自定义 WebView 没有包含在仓库中。Android 现在使用仓库内的 `AndroidWebView` 兼容封装，保留 `setHtml` / `getHtml` 接口，底层使用 Qt 官方 WebView。Windows 仍保留原项目的外部 WebView 依赖配置；本工作流只构建 Android。
+## 使用
 
-先获取固定版本依赖：
+从 [原生版 1.0.0 发布页](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.0) 下载 [Release APK](https://github.com/2034974607/ZhiNengTiKa/releases/download/native-v1.0.0/ZhiNengTiKa-1.0.0-release.apk)。发布页同时提供 Debug、UI 测试 APK、完整源码、审计与测试报告、构建来源清单和 SHA-256 校验文件。原生版需要单独安装，不能作为旧 Qt 应用的覆盖更新；源码目录替换不改变 Android 的包名或签名规则。
 
-```sh
-git clone https://github.com/bricke/Qt-AES.git third_party/Qt-AES
-git -C third_party/Qt-AES checkout fe02771df612ca80fdb12b1d48b6e089e1933e6b
-git clone https://github.com/KDAB/android_openssl.git third_party/android_openssl
-git -C third_party/android_openssl checkout b71f1470962019bd89534a2919f5925f93bc5779
-```
+Android 首次从当前浏览器或文件管理器安装时可能要求允许安装应用；由系统展示并由用户决定。Debug APK 供开发与测试，名称带“调试”。发布来源、旧版入口与历史报告的时间范围见 [GitHub 发布说明](docs/github-release.md)。
 
-设置 `ANDROID_SDK_ROOT`、`ANDROID_NDK_ROOT`、`JAVA_HOME` 和指向同版本桌面 Qt 安装目录的 `QT_HOST_PATH`（例如 `/opt/Qt/6.4.3/gcc_64`），将目标 Android Qt 的 `bin` 加入 `PATH`，然后构建：
+无需登录即可进入“离线资料库”，载入明确标注的合成示例，或使用系统文件选择器导入自己有权使用的题卡 JSON / 两行式目录。支持按名称、编号和学科搜索，查看全部/逐题、父子题、答案、解析和原题，并导出不含历史答卷的 HTML。离线资料始终只读，禁止提交；离线阅读不会自动请求远端题目图片。
 
-```sh
-mkdir -p build
-cd build
-qmake ../xinjiaoyu.pro CONFIG+=release ANDROID_ABIS=arm64-v8a ANDROID_PLATFORM=android-31
-make -j2
-make INSTALL_ROOT="$PWD/android-build" install
-"$QT_HOST_PATH/bin/androiddeployqt" --input android-xinjiaoyu-deployment-settings.json --output android-build --android-platform android-31 --jdk "$JAVA_HOME" --gradle --release
-```
+在线查询需在“账号”页使用自己的学生账号登录。查询、扫码回填编号和最近访问均可从首页操作；账号之间的缓存、历史、草稿与提交状态隔离。密码不保存，二维码由 CameraX + ZXing 在本机解码。安装包不含旧版题库、公共账号或个人记录。
 
-随后使用 Android SDK 的 `zipalign`、`apksigner` 和自己的长期签名密钥对 APK 对齐、签名并验证。不要将密钥、密钥密码或已解码的密钥文件提交到仓库。
+在线详情的“作业”页支持选择题、相册多图、参考答案与上次答卷回填。最终确认显示目标账号及未答题情况；图片会先上传，答卷另行发送。提交无法撤回，应用不自动重试。出现“结果未知”时须先到服务端核实，再考虑解除本机保护标记。
 
-## GitHub Actions 和 Release
+## 工程与构建
 
-`Android APK` 工作流会先运行 QtTest 更新回归测试，再编译、签名并检查 APK 的签名、包名、版本名、versionCode 和 ABI，上传 APK 及 `SHA256SUMS.txt`。
+- [app](app/build.gradle.kts)：Compose 界面、CameraX、Android Keystore AES-GCM、本地存储与 SAF 导入导出。
+- [protocol](protocol/build.gradle.kts)：纯 Kotlin/JVM 模型、AES/摘要、HTTP 协议、受限解析、离线格式与 HTML 导出；合成测试不连接业务服务。
+- [构建脚本](tools/build-android.py)、[APK 核验](tools/verify-apks.py)与[交付打包](tools/package-delivery.py)：保留实际构建与产物证据。
+- [设备验收方案](docs/device-acceptance.md)与[验收脚本](tools/acceptance-device.py)：脚本默认只生成计划，实际执行只接受干净单用户测试设备。本次多用户手机通过另行授权、明确限定 user0 的手机工具验收，未执行该脚本；结果见[真机记录](docs/device-results-20261128.md)。脚本的[主机合成检查](tools/check-device-acceptance.py)独立于设备测试。
+- [结构与数据流](docs/architecture.md)、[业务对照](docs/feature-comparison.md)、[协议](docs/protocol.md)、[迁移](docs/migration.md)、[隐私](docs/privacy.md)、[第三方许可](docs/third-party-notices.md)与[已知问题](docs/known-issues.md)。
 
-首次运行前，在仓库 Actions secrets 中配置：
-
-- `ANDROID_KEYSTORE_BASE64`：长期签名 keystore 的 Base64 文本。
-- `ANDROID_KEYSTORE_PASSWORD`：keystore 密码。
-- `ANDROID_KEY_PASSWORD`：密钥密码。
-
-密钥别名固定为 `zhinengtika`。请安全保存 keystore 和密码；丢失后无法继续用同一签名发布更新。
-
-默认分支的相关修改会触发构建。也可以在 Actions 中手动运行 `Android APK`；勾选 `publish` 后，工作流将在成功构建后创建与项目版本对应的 `v1.8.1` Release，附带 APK 和 SHA-256 校验文件。已存在的同名 Release 不会被覆盖。发布说明位于 `.github/RELEASE_NOTES.md`，发布后续版本时应同时更新应用版本和说明。
-
-## 更新与故障恢复
-
-启动更新检查不再禁用主窗口；无网络、更新检查失败、取消或返回后仍可进入主页。自动更新只检查本 fork 的正式 GitHub Release。应用内下载只接受名称匹配的 arm64-v8a APK，校验元数据中的大小和 SHA-256 后才交给系统安装器；缺少校验值时保留浏览器下载入口。
-
-Android 打开浏览器失败会显示提示。首次允许安装未知应用时，系统可能先打开授权设置；允许后返回应用，在下载完成的对话框中再次点击安装。不要把打开安装器理解为安装完成。
-
-可使用同版本桌面 Qt 单独运行更新与网络等待回归测试：
+常规 Android 开发机先准备 JDK 17、官方 platform 35 与 build-tools 34.0.0，再运行：
 
 ```sh
-mkdir -p build-tests
-cd build-tests
-"$QT_HOST_PATH/bin/qmake" ../tests/tests.pro
-make -j2
-./test_updaterelease
-cd ..
-mkdir -p build-network-tests
-cd build-network-tests
-"$QT_HOST_PATH/bin/qmake" ../tests/network_tests.pro
-make -j2
-./test_network
+./gradlew :protocol:test :app:assembleDebug :app:lintDebug
 ```
 
-构建校验不代表真机功能验证。原有题库、登录、扫码外部服务仍沿用原项目，其当前可用性需要另外测试。本 fork v1.8.1 沿用 v1.8.0 签名，可直接覆盖升级该版本；与原作者签名不同，不要直接覆盖安装使用其他签名的版本。
+完整构建、ARM64 proot 的工具架构限制、SDK 许可、Release 签名和离线依赖说明见 [BUILDING.md](BUILDING.md)。测试证据和真机验证范围见 [TESTING.md](TESTING.md)，主机合成测量与受限 Android 采样见 [PERFORMANCE.md](PERFORMANCE.md)。
+
+## 差异与限制
+
+本版保留经审计的学生登录、题卡读取、图片上传与答卷提交协议，但未使用真实账号执行线上互操作测试。编译或本地 MockWebServer 测试不能证明当前生产服务可用。
+
+未实现公告、学案资源下载、应用内更新检查与下载、独立字体/字号设置、原始答卷 JSON 手工编辑。上游学案接口使用的随机授权与固定学校编号不属于有效认证方案；原生版未采用它。本版通过专用 GitHub 发布页手动下载，不能把旧 Qt 的更新 APK 安装到本版。详情及其他差异见 [功能对照](docs/feature-comparison.md) 与 [已知问题](docs/known-issues.md)。
+
+旧应用私有数据不能跨应用沙箱自动读取。离线导入会去除旧答卷与账号元数据，不迁移旧密码、token 或公共账号。卸载会删除本版加密私有数据；签名私钥未包含在源码或下载交付中。
+
+## 许可与来源
+
+工程以 GNU AGPL v3 分发，完整对应源码与 APK 一同交付，见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。依赖分别遵循原许可证，见 [第三方声明](docs/third-party-notices.md) 及应用“设置 → 开源说明”。
+
+审计基线：fork [2034974607/ZhiNengTiKa](https://github.com/2034974607/ZhiNengTiKa) `ed34415b5fb893dc22a6b94a5cd14e3c2e7a457c`；upstream [LFWQSP2641/ZhiNengTiKa](https://github.com/LFWQSP2641/ZhiNengTiKa) `4d192e4e61a7f854c8f48be739e7cff513b6b242`。本工程是独立重写，与教育服务运营方不存在官方关联；题目、题卡及商标权益归相应权利人。
