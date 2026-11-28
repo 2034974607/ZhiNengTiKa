@@ -1,0 +1,46 @@
+贡献人员头像与 GitHub 图标
+==========================
+
+贡献人员头像仅用于标识项目归属与贡献者；图片与标识的权利归各自权利人所有，
+不因项目代码采用 AGPL-3.0 而改变，也不表示隶属、认可或背书关系。
+头像于 2026-11-28 从各自公开 GitHub 主页获取并随包内置，应用显示时不发起头像网络请求。
+来源、原始文件摘要与获取时间见完整源码 docs/contributor-avatars.json。
+
+LFWQSP2641（上游仓库作者）
+主页：https://github.com/LFWQSP2641
+头像：https://github.com/LFWQSP2641.png?size=160
+
+2034974607（项目贡献）
+主页：https://github.com/2034974607
+头像：https://github.com/2034974607.png?size=160
+
+OpenAI（GPT-6.1-Sol · AI 辅助开发）
+主页：https://github.com/openai
+头像：https://github.com/openai.png?size=160
+
+GitHub 仓库图标来自 Primer Octicons 的 mark-github-16.svg，转换为 Android VectorDrawable。
+源文件：https://github.com/primer/octicons/blob/main/icons/mark-github-16.svg
+许可：https://github.com/primer/octicons/blob/main/LICENSE
+原始许可全文：
+
+MIT License
+
+Copyright (c) 2026 GitHub Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

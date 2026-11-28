@@ -2,6 +2,8 @@
 
 ## 状态与证据范围
 
+当前发布为 1.0.3：设置页增加圆角分组、贡献人员本地头像与 GitHub 入口，包含 1.0.1 整库 ZIP、六科分类、顶部目录入口和 10,000 张 / 512 MiB 离线库。1.0.3 已构建并完成 APK 静态核验，Release Lint 为 0 错误、14 警告、3 提示；未重跑单元测试或设备测试。1.0.1 的 60 项 JVM 测试、519 张库迁移/重复导入验证为历史回归。下方 32 项测试、两项 Compose 测试、设备和性能描述均属于 1.0.0 历史，详见[测试报告](../TESTING.md)。
+
 本文对照 fork 修复版 1.8.1（`ed34415`，Qt Widgets + Android QtWebView/QML 壳）、upstream `dev` 快照（`4d192e4`，Qt Widgets + QML 双前端）和本仓库的原生重写版。旧版事实来自[第一阶段业务审计](audit/features.md)，固定提交记录见[仓库基线](audit/repository-baseline.json)。
 
 当前功能已接入源码，并实际生成最终 Debug、独立签名且经 R8/资源收缩的 Release，以及 Debug instrumentation 测试 APK；三个最终 APK 均通过签名、包名/版本、最低 API 26 / 目标 API 35、ZIP 完整性和对齐检查。最后一轮草稿、权限、主题、备份声明与相册重选提示已编入这些产物。
@@ -34,7 +36,7 @@ JVM 合成测试实际执行 **32 项，全部通过**。2026-11-28 在 OPPO PHY
 | 外观 | 字体/字号/小字等偏好 | QML style、远端背景图 | 跟随系统/浅色/深色主题；使用系统字体与 M3 排版；没有独立字体/字号选择或背景图源 |
 | 说明与许可 | FAQ/About/Qt/开源说明 | 类似说明页 | FAQ、关于、隐私、动态枚举的许可文件及可滚动/选择的全文对话框；项目 AGPLv3、第三方各自原许可；JUnit 4 为 EPL 1.0，仅用于测试 |
 | 图片处理与缓存 | JPEG 压缩等旧流程 | 本地扫码 | 上传图最长边采样至不超过 2048、JPEG 质量 85、15 MB 上限，重编码去 EXIF；题目/答卷图的 Coil 内存与磁盘缓存禁用；不修改相册原图 |
-| 更新检查 | fork 已修复 GitHub Releases 更新 | 部分类存在但 UI 未注册 | 未实现应用内更新检查与下载；使用[原生版发布页](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.0)手动下载，不安装旧 Qt APK |
+| 更新检查 | fork 已修复 GitHub Releases 更新 | 部分类存在但 UI 未注册 | 未实现应用内更新检查与下载；使用[原生版发布页](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.3)手动下载，不安装旧 Qt APK |
 | 公告 | 无 | QML 公告、未读状态 | 未实现 |
 | 学案资源下载 | 无 | Widgets/QML 分页资源下载 | 未实现；上游随机授权及固定学校编号不能作为有效认证依据 |
 | 安装与共存 | 旧包名和签名 | 旧包名和签名 | Release `app.zhinengtika.nativeapp`，Debug `.debug`；独立 Release 私钥留在工程外。已在用户 0 核对并启动两个独立安装，与旧 Qt 应用共存尚未实测 |

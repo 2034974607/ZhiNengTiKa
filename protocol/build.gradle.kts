@@ -18,6 +18,19 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 }
 
+tasks.register<JavaExec>("verifyOfflineLibrary") {
+    group = "verification"
+    description = "Import and reopen the supplied 519-card archive, including legacy migration and repeat import"
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("app.zhinengtika.nativeapp.data.OfflineLibraryVerificationKt")
+    val archive = providers.gradleProperty("offlineLibraryZip")
+    doFirst {
+        require(archive.isPresent) { "Pass -PofflineLibraryZip=/path/to/library.zip" }
+        args(archive.get(), layout.buildDirectory.file("reports/offline-library-verification.json").get().asFile.absolutePath)
+    }
+}
+
 tasks.register<JavaExec>("benchmarkSynthetic") {
     group = "verification"
     description = "Measure synthetic host JVM data paths; not Android startup, frames, or device performance"

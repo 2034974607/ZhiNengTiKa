@@ -15,6 +15,9 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
+BUILD_CONFIG = (ROOT / "app/build.gradle.kts").read_text()
+VERSION_CODE = re.search(r"versionCode\s*=\s*(\d+)", BUILD_CONFIG)[1]
+VERSION_NAME = re.search(r'versionName\s*=\s*"([^"]+)"', BUILD_CONFIG)[1]
 
 
 def run(command):
@@ -59,12 +62,12 @@ def verify(path, expected_package, tools, java):
     target_sdk = re.search(r"^targetSdkVersion:'(\d+)'", metadata["output"], re.MULTILINE)
     permissions = re.findall(r"^uses-permission: name='([^']+)'", metadata["output"], re.MULTILINE)
     is_test = expected_package.endswith(".test")
-    version_expected = "1.0.0-debug" if expected_package.endswith(".debug") else "1.0.0"
+    version_expected = VERSION_NAME + ("-debug" if expected_package.endswith(".debug") else "")
     success = bad is None and all(check["exitCode"] == 0 for check in [signature, metadata, alignment, manifest])
     success = success and found is not None and found[1] == expected_package and cert is not None
     success = success and min_sdk is not None and min_sdk[1] == "26" and target_sdk is not None and target_sdk[1] == "35"
     if not is_test:
-        success = success and found is not None and found[2] == "10000" and found[3] == version_expected
+        success = success and found is not None and found[2] == VERSION_CODE and found[3] == version_expected
     return {
         "file": str(path.relative_to(ROOT)), "bytes": path.stat().st_size,
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "zipCrcValid": bad is None,

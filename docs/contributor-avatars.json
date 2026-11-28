@@ -1,0 +1,29 @@
+{
+  "retrievedAtUtc": "2026-11-28T08:09:20.738872+00:00",
+  "avatars": [
+    {
+      "username": "LFWQSP2641",
+      "sourceUrl": "https://github.com/LFWQSP2641.png?size=160",
+      "resolvedUrl": "https://avatars.githubusercontent.com/u/61956291?s=160&v=4",
+      "file": "app/src/main/res/drawable-nodpi/avatar_lfwqsp2641.jpg",
+      "bytes": 6119,
+      "sha256": "9870028812ffd1acb5ad866b8d7766e0281bc24be70f35c73f038aa97fe65e05"
+    },
+    {
+      "username": "2034974607",
+      "sourceUrl": "https://github.com/2034974607.png?size=160",
+      "resolvedUrl": "https://avatars.githubusercontent.com/u/116661775?s=160&v=4",
+      "file": "app/src/main/res/drawable-nodpi/avatar_2034974607.jpg",
+      "bytes": 5001,
+      "sha256": "7740e2e6d754831da332e67007256438b11d887f3e51a0219169c1561137ed95"
+    },
+    {
+      "username": "openai",
+      "sourceUrl": "https://github.com/openai.png?size=160",
+      "resolvedUrl": "https://avatars.githubusercontent.com/u/14957082?s=160&v=4",
+      "file": "app/src/main/res/drawable-nodpi/avatar_openai.png",
+      "bytes": 4248,
+      "sha256": "c028baa9751ae4dc3b1025dfedca4da4385148d4bf0d2afc0f126628d9129643"
+    }
+  ]
+}

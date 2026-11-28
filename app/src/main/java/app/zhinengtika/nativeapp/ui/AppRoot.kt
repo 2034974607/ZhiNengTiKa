@@ -351,7 +351,7 @@ fun AppRoot(context: Context) {
                     var loadError by remember(id) { mutableStateOf<String?>(null) }
                     LaunchedEffect(id) {
                         val result = runCatching {
-                            withContext(Dispatchers.IO) { offlineStore.cards().firstOrNull { it.id == id } }
+                            withContext(Dispatchers.IO) { offlineStore.card(id) }
                         }
                         result.onSuccess { loaded ->
                             entryState = loaded

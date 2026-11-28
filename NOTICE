@@ -13,7 +13,7 @@ Qt / C++ / QML / WebView 代码，也不复用旧项目的构建产物或签名�
   （https://github.com/LFWQSP2641/ZhiNengTiKa）
 * 修复 fork 归属：2034974607 / ZhiNengTiKa
   （https://github.com/2034974607/ZhiNengTiKa）
-* 审计基线：fork 提交 ed34415b5fb893dc22a6b94a5cd14e3c2e7a457c（当前已发布修复版 1.8.1）
+* 审计基线：fork 提交 ed34415b5fb893dc22a6b94a5cd14e3c2e7a457c（旧 Qt 修复版 1.8.1）
   与 upstream 提交 4d192e4e61a7f854c8f48be739e7cff513b6b242。
 
 许可证
@@ -49,8 +49,8 @@ assets/legal/ 目录。
 --------
 
 发布仓库：https://github.com/2034974607/ZhiNengTiKa
-对应版本完整源码：https://github.com/2034974607/ZhiNengTiKa/tree/native-v1.0.0
+对应版本完整源码：https://github.com/2034974607/ZhiNengTiKa/tree/native-v1.0.3
 源码 ZIP、构建脚本、许可证与验证报告同安装包一并提供于：
-https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.0
+https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.3
 发布维护者：2034974607（https://github.com/2034974607）
 请勿通过公开渠道提交密码、token、学生资料或签名私钥。

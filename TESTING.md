@@ -1,6 +1,20 @@
 # 测试与验收
 
-## 已执行的本地测试
+## 1.0.3 设置页更新的验证范围
+
+APK 构建输入为 `786ffd1fc1fe411702b09c63f512c2e7fd12cd3e`。Debug、Release 与 AndroidTest APK 编译成功，Release Lint 为 **0 错误、14 警告、3 提示**；构建耗时 6 分 7 秒，124 项任务中 55 项执行、69 项沿用已有结果。三个 APK 均通过签名、包名/版本、ZIP 完整性与对齐检查，Release 的贡献人员文案、三张本地头像、GitHub 图标及仓库入口已做资源核验。
+
+本轮未重跑 JVM 单元测试、未安装到手机、未执行 instrumentation 或设置页视觉验收。14 项 Lint 警告包含已有 Navigation 自定义检查兼容性限制，完整内容保留在发布报告中。1.0.1 的 60 项 JVM 回归与 1.0.0 的两项真机测试分别属于历史版本，不能算作 1.0.3 的新测试结果。
+
+GitHub 发布直接复用已核验的三个 APK；发布源码的 `app/`、`protocol/`、Gradle 配置、wrapper 与构建脚本须与上述构建提交逐项相同。发布清单、静态检查原始报告与构建日志在 [native-v1.0.3 发布页](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.3) 一同提供，来源说明见[发布说明](docs/github-release.md)。
+
+## 1.0.1 离线整库修复回归（历史）
+
+本轮新增的文件存储（17 项）、科目识别（6 项）与批量导入（5 项）测试，与原 32 项一起重新执行：**60 项通过，0 失败、0 错误、0 跳过**。本轮手机操作已停止，未执行新的手机安装、SAF 导入或 instrumentation；已编译的新 UI 测试不记为设备测试通过。另以真实提取 ZIP 调用产品 `OfflineLibraryImporter` 与 `FileOfflineTemplateStore`，在主机 JVM 使用 AES-GCM 实际落盘：旧 100 张迁移后补入 419 张并更新 100 张，最终 519 张；目录 519 条，六科数量为 67/101/87/111/84/69，重启后全部 7,355 道题可读。再次导入为 0 新增 / 519 更新，没有重复题卡，旧 ID 保留。目录列表只解密一个元数据索引，打开单卡只解密索引和该卡。
+
+验收报告为 `protocol/build/reports/offline-library-verification.json`，复现命令见[离线资料库](docs/offline-library.md)。以上是主机导入/存储验证；本轮 Android UI、SAF 和 Keystore 的实际执行范围以修复版交付报告为准，下方真机记录属于 1.0.0，不能直接算作 1.0.1 的验收。
+
+## 1.0.0 已执行的本地测试（历史）
 
 `protocol` 模块使用 JDK 17、JUnit 4 和本机 MockWebServer，全部夹具为人工构造的合成数据。最近一次协议测试实际执行 **32 个，32 通过，0 失败，0 错误，0 跳过**。报告路径：`protocol/build/test-results/test/`、`protocol/build/reports/tests/test/`，交付证据内保留 JUnit XML 和日志。2026-11-28 的末次构建仅升级 Android UI 测试依赖并补充验收工具/文档，协议源码未变；`:protocol:test` 为 Gradle `UP-TO-DATE`，不能写作本轮重新执行 32 项。
 
@@ -20,7 +34,9 @@ python3 tools/build-android.py -- :protocol:test
 
 这些测试没有连接 `www.xinjiaoyu.com` 或第三方二维码服务，也没有使用任何真实账号、题卡或作业。AES 往返不等于对服务端密文的跨实现验证。
 
-## Android 构建与静态产物检查
+## Android 构建与静态产物检查（1.0.0 历史）
+
+本节以及后续 instrumentation、安装、验收脚本、真机清单和性能各节均描述 1.0.0 历史；其中“本轮”“本次”“最终”均仅指该版本的验收，不能作为 1.0.3 结果。
 
 已实际生成最终 Debug、独立签名且经过 R8/资源收缩的 Release，以及 Debug instrumentation 测试 APK。三个 APK 的完整静态核验均通过；Release 与 Debug 证书独立，测试 APK 与 Debug 证书相同，均为最低 API 26 / 目标 API 35。构建脚本、固定版本和复现步骤见 [BUILDING.md](BUILDING.md)。最终交付目录的构建日志及 APK 核验 JSON 是对应交付物的证据；较早日志中的失败、中断或主动取消保留用来解释修正，不代表最终结果。
 

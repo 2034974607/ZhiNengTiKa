@@ -19,7 +19,7 @@
 | 最近访问历史 | `encrypted_history` | Keystore AES-GCM | 设置页确认后清除；最多 200 条/账号 |
 | 作答草稿 | `encrypted_answer_drafts` | Keystore AES-GCM | 按账号+编号存储，确认成功后尝试清除；缓存清理不删除草稿 |
 | 提交状态标记 | `encrypted_submission_state` | Keystore AES-GCM | 成功确认后移除；未知状态持久保留直到人工核实解锁 |
-| 离线导入题库/目录 | `encrypted_offline_library` | Keystore AES-GCM | 用户可逐条删除或清空；不含账号与提交依据 |
+| 离线导入题库/目录 | `filesDir/offline-library-v2/cards/*.enc` 与 `index.enc` | 正文与元数据均为 Keystore AES-GCM | 用户可逐条删除或清空；旧 `encrypted_offline_library` 两键在新索引完整提交后才移除 |
 | UI 偏好（主题） | `ui_preferences` | 非敏感明文 | 仅主题枚举，无凭据/业务数据 |
 
 `allowBackup=false`：不参与系统备份/转移，避免加密数据被备份到不受控位置（同时意味着卸载
