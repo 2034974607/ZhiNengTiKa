@@ -2,7 +2,9 @@
 
 独立 Kotlin / Jetpack Compose / Material 3 客户端。新工程不依赖 Qt、C++、QML 或 WebView；使用新的应用标识、独立签名和全新 Git 历史。旧仓库仅用来审计业务与协议，未合并其历史。
 
-最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.1` / `10001`。Release 沿用 1.0.0 签名，可保留数据覆盖升级；旧版最多 100 张的本机离线库会自动迁移。包名设计支持与旧 Qt 版共存，数据分别保存。
+最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.2` / `10002`。Release 沿用 1.0.0 签名，可保留数据覆盖升级；旧版最多 100 张的本机离线库会自动迁移。包名设计支持与旧 Qt 版共存，数据分别保存。
+
+1.0.2 在设置页新增“项目仓库”和“贡献人员”：可打开[项目仓库](https://github.com/2034974607/ZhiNengTiKa)与[上游仓库](https://github.com/LFWQSP2641/ZhiNengTiKa)，并展示上游仓库作者 LFWQSP2641、项目贡献者 2034974607，以及 OpenAI（GPT-6.1-Sol · AI 辅助开发），各自附可打开的 GitHub 主页链接。
 
 1.0.1 修复批量导入重复提示、六科分类与目录入口，并改为逐卡加密存储，容量提高为 10,000 张 / 512 MiB。60 项 JVM 回归已实际通过，完整 519 张提取库也通过迁移、加密落盘、重启与重复导入验收，详见[离线资料库](docs/offline-library.md)及[测试与验收](TESTING.md)。1.0.0 在 OPPO PHY120 / Android 17（API 37）的受限设备记录仍保留在[历史真机记录](docs/device-results-20261128.md)，不能代替本修复版设备验收。真实账号、相机和复杂生命周期仍待验证。
 

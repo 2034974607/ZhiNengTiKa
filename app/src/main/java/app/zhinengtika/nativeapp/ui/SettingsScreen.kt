@@ -2,6 +2,7 @@
 
 package app.zhinengtika.nativeapp.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.unit.dp
@@ -122,6 +125,33 @@ fun SettingsScreen(
             InfoButton("隐私说明", Section.PRIVACY) { section = it }
             InfoButton("开源说明", Section.OPEN_SOURCE) { section = it }
 
+            Text("项目仓库", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("本项目", style = MaterialTheme.typography.titleMedium)
+                    GitHubLink("github.com/2034974607/ZhiNengTiKa", "2034974607/ZhiNengTiKa")
+                    Text("上游仓库", style = MaterialTheme.typography.titleMedium)
+                    GitHubLink("github.com/LFWQSP2641/ZhiNengTiKa", "LFWQSP2641/ZhiNengTiKa")
+                }
+            }
+
+            Text("贡献人员", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            ContributorCard(
+                name = "LFWQSP2641",
+                contribution = "上游仓库作者",
+                githubUsername = "LFWQSP2641",
+            )
+            ContributorCard(
+                name = "2034974607",
+                contribution = "项目贡献",
+                githubUsername = "2034974607",
+            )
+            ContributorCard(
+                name = "OpenAI",
+                contribution = "GPT-6.1-Sol · AI 辅助开发",
+                githubUsername = "openai",
+            )
+
             Text(
                 "本应用为独立原生重写版本，采用 Kotlin / Jetpack Compose / Material 3，不含 WebView。安装包不包含旧版题卡数据或个人记录。",
                 style = MaterialTheme.typography.bodySmall,
@@ -197,6 +227,43 @@ private fun InfoButton(label: String, section: Section, onSelect: (Section) -> U
         TextButton(onClick = { onSelect(section) }, modifier = Modifier.fillMaxWidth()) {
             Text(label, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+@Composable
+private fun ContributorCard(name: String, contribution: String, githubUsername: String) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(name, style = MaterialTheme.typography.titleMedium)
+            Text(
+                contribution,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            GitHubLink("GitHub · @$githubUsername", githubUsername)
+        }
+    }
+}
+
+@Composable
+private fun GitHubLink(label: String, path: String) {
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+    TextButton(
+        onClick = {
+            runCatching { uriHandler.openUri("https://github.com/$path") }
+                .onFailure {
+                    Toast.makeText(context, "无法打开 GitHub 链接，请检查是否安装浏览器。", Toast.LENGTH_LONG).show()
+                }
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(label, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(8.dp))
+        Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null)
     }
 }
 
