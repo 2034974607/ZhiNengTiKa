@@ -1,6 +1,6 @@
 # 新教育智能题卡 · 原生 Android 重写
 
-独立 Kotlin / Jetpack Compose / Material 3 客户端。新工程不依赖 Qt、C++、QML 或 WebView；使用新的应用标识、独立签名和全新 Git 历史。旧仓库仅用来审计业务与协议，未合并其历史。
+独立 Kotlin / Jetpack Compose / Material 3 客户端，不依赖 Qt、C++、QML 或 WebView；使用新的应用标识和独立签名。原生工程先以独立历史完成开发，现发布回原仓库的 `master`，以原生源码替换默认目录，并保留旧 Qt 与原生工程两段提交历史。旧版源码和安装包仍可从 [Qt v1.8.1](https://github.com/2034974607/ZhiNengTiKa/releases/tag/v1.8.1) 查看。
 
 最低 Android 8.0（API 26），目标 API 35。Release 为 `app.zhinengtika.nativeapp`，Debug 为 `app.zhinengtika.nativeapp.debug`，版本 `1.0.0` / `10000`。包名设计支持与旧版共存，数据分别保存。
 
@@ -8,7 +8,9 @@
 
 ## 使用
 
-安装交付目录中的 Release APK。Android 首次从当前文件管理器安装时可能要求允许安装应用；由系统展示并由用户决定。Debug APK 供开发与测试，名称带“调试”。
+从 [原生版 1.0.0 发布页](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.0) 下载 [Release APK](https://github.com/2034974607/ZhiNengTiKa/releases/download/native-v1.0.0/ZhiNengTiKa-1.0.0-release.apk)。发布页同时提供 Debug、UI 测试 APK、完整源码、审计与测试报告、构建来源清单和 SHA-256 校验文件。原生版需要单独安装，不能作为旧 Qt 应用的覆盖更新；源码目录替换不改变 Android 的包名或签名规则。
+
+Android 首次从当前浏览器或文件管理器安装时可能要求允许安装应用；由系统展示并由用户决定。Debug APK 供开发与测试，名称带“调试”。发布来源、旧版入口与历史报告的时间范围见 [GitHub 发布说明](docs/github-release.md)。
 
 无需登录即可进入“离线资料库”，载入明确标注的合成示例，或使用系统文件选择器导入自己有权使用的题卡 JSON / 两行式目录。支持按名称、编号和学科搜索，查看全部/逐题、父子题、答案、解析和原题，并导出不含历史答卷的 HTML。离线资料始终只读，禁止提交；离线阅读不会自动请求远端题目图片。
 
@@ -36,7 +38,7 @@
 
 本版保留经审计的学生登录、题卡读取、图片上传与答卷提交协议，但未使用真实账号执行线上互操作测试。编译或本地 MockWebServer 测试不能证明当前生产服务可用。
 
-未实现公告、学案资源下载、应用内更新源、独立字体/字号设置、原始答卷 JSON 手工编辑。上游学案接口使用的随机授权与固定学校编号不属于有效认证方案；原生版未采用它。没有原生版自己的发布源，不能把旧 Qt 的更新 APK 安装到本版。详情及其他差异见 [功能对照](docs/feature-comparison.md) 与 [已知问题](docs/known-issues.md)。
+未实现公告、学案资源下载、应用内更新检查与下载、独立字体/字号设置、原始答卷 JSON 手工编辑。上游学案接口使用的随机授权与固定学校编号不属于有效认证方案；原生版未采用它。本版通过专用 GitHub 发布页手动下载，不能把旧 Qt 的更新 APK 安装到本版。详情及其他差异见 [功能对照](docs/feature-comparison.md) 与 [已知问题](docs/known-issues.md)。
 
 旧应用私有数据不能跨应用沙箱自动读取。离线导入会去除旧答卷与账号元数据，不迁移旧密码、token 或公共账号。卸载会删除本版加密私有数据；签名私钥未包含在源码或下载交付中。
 

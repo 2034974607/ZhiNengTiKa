@@ -121,5 +121,5 @@ JUnit 4.13.2 的 `LICENSE-junit.txt` 已从实际缓存构件提取为 `assets/l
 许可文本 SHA-256 为 `9648bb2891b9813970bddb68d4be8a5e6ec8280d0180a53dfb29236b579c55bb`。
 JUnit 只用于测试；Release 的实际解析清单与 Debug/测试的锁文件补充范围分开记录。补充声明由 `tools/collect-debug-test-notices.py` 生成，不改变应用内 Release 许可资产或已验签 APK。
 
-完整对应源码与 APK 一同交付；未向公网发布，也未提供任何外部业务服务。APK 自身没有 GitHub 上传、
-遥测或广告 SDK。源码中的业务兼容密钥不构成安全边界，不在本文件披露。
+完整对应源码与 APK 一同交付，并在原仓库的 [原生版 GitHub Release](https://github.com/2034974607/ZhiNengTiKa/releases/tag/native-v1.0.0) 公开分发；本项目未提供任何外部业务服务。APK 自身没有 GitHub 上传、
+遥测或广告 SDK。源码中的业务兼容密钥不构成安全边界，不在本文件披露。发布前交付报告的时间范围见[发布说明](github-release.md)。
